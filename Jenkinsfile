@@ -36,7 +36,6 @@ pipeline {
             }
             steps {
                 container(name: 'kaniko', shell: '/busybox/sh') {
-                    // TODO: Parameterize the container name 'microservice-template'
                     sh '/kaniko/executor --dockerfile `pwd`/Dockerfile --context `pwd` --destination=harbor.turkey-diminished.ts.net/ams/ams-service:latest'
                 }
             }
