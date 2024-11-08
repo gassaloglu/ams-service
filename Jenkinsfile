@@ -36,7 +36,7 @@ pipeline {
             }
             steps {
                 container(name: 'kaniko', shell: '/busybox/sh') {
-                    sh '/kaniko/executor --dockerfile `pwd`/Dockerfile --context `pwd` --destination=harbor.turkey-diminished.ts.net/ams/ams-service:latest'
+                    sh '/kaniko/executor --dockerfile `pwd`/Dockerfile --context `pwd` --destination=harbor.turkey-diminished.ts.net/ams-service/ams-service:latest'
                 }
             }
         }
