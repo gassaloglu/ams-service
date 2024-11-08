@@ -1,9 +1,9 @@
 package main
 
 import (
-	"ams-passenger-service/core/services"
-	"ams-passenger-service/infrastructure/api/controllers"
-	"ams-passenger-service/infrastructure/persistence/repositories"
+	"ams-service/core/services"
+	"ams-service/infrastructure/api/controllers"
+	"ams-service/infrastructure/persistence/repositories"
 	"github.com/gin-gonic/gin"
 )
 

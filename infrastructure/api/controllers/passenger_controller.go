@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"ams-passenger-service/core/services"
+	"ams-service/core/services"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

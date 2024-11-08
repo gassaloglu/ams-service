@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"ams-passenger-service/application/ports"
-	"ams-passenger-service/core/entities"
+	"ams-service/application/ports"
+	"ams-service/core/entities"
 )
 
 /* ADAPTER - HANDLER */

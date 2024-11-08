@@ -1,6 +1,6 @@
 package services
 
-import "ams-passenger-service/core/entities"
+import "ams-service/core/entities"
 
 type PassengerRepository interface {
 	GetPassengerByID(passengerID string) (entities.Passenger, error)

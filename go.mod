@@ -1,4 +1,4 @@
-module ams-passenger-service
+module ams-service
 
 go 1.22
 
