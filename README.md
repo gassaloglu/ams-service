@@ -11,5 +11,5 @@ To install needed frameworks, libraries etc., run the appropriate script based o
 ### Linux/macOS:
 - Open a terminal, navigate to the project directory, and run:
   ```bash
-  chmod +x scripts/install_gin.sh
-  ./scripts/install_gin.sh
+  chmod +x scripts/install_unix.sh
+  ./scripts/install_unix.sh

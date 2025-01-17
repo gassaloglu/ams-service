@@ -21,3 +21,8 @@ type Passenger struct {
 	Disabled         bool   `json:"disabled" binding:"required"`
 	Child            bool   `json:"child" binding:"required"`
 }
+
+type OnlineCheckInRequest struct {
+	PNR     string `json:"pnr" binding:"required,len=6,alphanum"`
+	Surname string `json:"surname" binding:"required,alpha,min=2,max=50"`
+}
