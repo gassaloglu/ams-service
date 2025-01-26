@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ams-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ams-service
+  template:
+    metadata:
+      labels:
+        app: ams-service
+    spec:
+      containers:
+        - name: ams-service
+          image: harbor.turkey-diminished.ts.net/ams/ams-service:latest
+          ports:
+            - containerPort: 8080
