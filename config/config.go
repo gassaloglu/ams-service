@@ -1,33 +1,40 @@
 package config
 
 import (
-	"io/ioutil"
-
-	"gopkg.in/yaml.v3"
+	"github.com/spf13/viper"
 )
 
 type Config struct {
-	ServerPort string `yaml:"server_port"`
-	Database   struct {
-		Host     string `yaml:"host"`
-		Port     int    `yaml:"port"`
-		User     string `yaml:"user"`
-		Password string `yaml:"password"`
-		Name     string `yaml:"name"`
-	} `yaml:"database"`
+	ServerPort string
+	Database   DatabaseConfig
+	Firebase   FirebaseConfig
+}
+
+type DatabaseConfig struct {
+	Type     string
+	Host     string
+	Port     int
+	User     string
+	Password string
+	Name     string
+	URI      string
+}
+
+type FirebaseConfig struct {
+	CredentialsFile string
 }
 
 func LoadConfig() (*Config, error) {
-	data, err := ioutil.ReadFile("config/config.yaml")
-	if err != nil {
+	viper.SetConfigFile("../config/config.yaml") // Specify the path to the config file
+
+	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
-	var config Config
-	err = yaml.Unmarshal(data, &config)
-	if err != nil {
+	var cfg Config
+	if err := viper.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
 
-	return &config, nil
+	return &cfg, nil
 }

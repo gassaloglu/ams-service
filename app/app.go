@@ -1,26 +1,73 @@
 package app
 
 import (
+	"ams-service/application/ports"
+	"ams-service/config"
 	"ams-service/core/services"
 	"ams-service/infrastructure/api/controllers"
-	"ams-service/infrastructure/persistence/repositories"
+	"ams-service/infrastructure/persistence/repositories/mongodb"
+	"ams-service/infrastructure/persistence/repositories/postgres"
 	"ams-service/middlewares"
+	"context"
+	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq" // Import the PostgreSQL driver
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var LOG_PREFIX string = "app.go"
 
 func Run() {
-	// Initialize repositories
-	passengerRepo := repositories.NewPassengerRepositoryImpl()
+	// Load configuration
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatalf("%s - Failed to load configuration: %v", LOG_PREFIX, err)
+	}
+
+	var userRepo ports.UserRepository
+	var passengerRepo ports.PassengerRepository
+
+	// Initialize database connection based on configuration
+	switch cfg.Database.Type {
+	case "postgres":
+		db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+			cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.Name))
+		if err != nil {
+			log.Fatalf("%s - Failed to connect to PostgreSQL database: %v", LOG_PREFIX, err)
+		}
+		defer db.Close()
+		userRepo = postgres.NewUserRepositoryImpl(db)
+		passengerRepo = postgres.NewPassengerRepositoryImpl(db)
+	case "mongodb":
+		clientOptions := options.Client().ApplyURI(cfg.Database.URI)
+		client, err := mongo.Connect(context.Background(), clientOptions)
+		if err != nil {
+			log.Fatalf("%s - Failed to connect to MongoDB: %v", LOG_PREFIX, err)
+		}
+		defer client.Disconnect(context.Background())
+		userRepo = mongodb.NewUserRepositoryImpl(client, cfg.Database.Name, "users")
+		passengerRepo = mongodb.NewPassengerRepositoryImpl(client, cfg.Database.Name, "passengers")
+	case "firebase":
+		// Initialize Firebase client here
+		// client := initializeFirebaseClient(cfg.Firebase.CredentialsFile)
+		// userRepo = firebase.NewUserRepositoryImpl(client)
+		// passengerRepo = firebase.NewPassengerRepositoryImpl(client)
+		log.Fatalf("%s - Firebase support is not implemented yet", LOG_PREFIX)
+	default:
+		log.Fatalf("%s - Unsupported database type: %s", LOG_PREFIX, cfg.Database.Type)
+	}
 
 	// Initialize services
 	passengerService := services.NewPassengerService(passengerRepo)
+	userService := services.NewUserService(userRepo)
 
 	// Initialize controllers
 	passengerController := controllers.NewPassengerController(passengerService)
+	userController := controllers.NewUserController(userService)
 
 	// Setup router
 	router := gin.Default()
@@ -34,10 +81,14 @@ func Run() {
 		passengerRoute.GET("/:id", passengerController.GetPassengerByID)
 	}
 
+	userRoute := router.Group("/user")
+	{
+		userRoute.POST("/register", userController.RegisterUser)
+	}
+
 	// Run the server
-	err := router.Run(":8080")
+	err = router.Run(fmt.Sprintf(":%s", cfg.ServerPort))
 	if err != nil {
 		middlewares.LogError(fmt.Sprintf("%s - Failed to start server: %v", LOG_PREFIX, err))
-
 	}
 }
