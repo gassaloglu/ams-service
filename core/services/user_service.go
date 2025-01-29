@@ -3,6 +3,7 @@ package services
 import (
 	"ams-service/core/entities"
 	"ams-service/middlewares"
+	"ams-service/utils"
 	"fmt"
 )
 
@@ -21,7 +22,22 @@ func NewUserService(repo UserRepository) *UserService {
 }
 
 func (s *UserService) RegisterUser(user entities.User) error {
-	err := s.repo.RegisterUser(user)
+	salt, err := utils.GenerateSalt(16)
+	if err != nil {
+		middlewares.LogError(fmt.Sprintf("%s - Error generating salt: %v", USER_LOG_PREFIX, err))
+		return err
+	}
+
+	hashedPassword, err := utils.HashPassword(user.PasswordHash, salt)
+	if err != nil {
+		middlewares.LogError(fmt.Sprintf("%s - Error hashing password: %v", USER_LOG_PREFIX, err))
+		return err
+	}
+
+	user.PasswordHash = hashedPassword
+	user.Salt = salt
+
+	err = s.repo.RegisterUser(user)
 	if err != nil {
 		middlewares.LogError(fmt.Sprintf("%s - Error registering user: %v", USER_LOG_PREFIX, err))
 		return err
