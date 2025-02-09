@@ -12,11 +12,11 @@ import (
 
 var PASSENGER_LOG_PREFIX string = "passenger_repository.go"
 
-type PassengerRepositoryImpl struct {
+type PlaneRepositoryImpl struct {
 	client *db.Client
 }
 
-func NewPassengerRepositoryImpl(client *db.Client) ports.PassengerRepository {
+func NewPlaneRepositoryImpl(client *db.Client) ports.PassengerRepository {
 	return &PassengerRepositoryImpl{client: client}
 }
 
