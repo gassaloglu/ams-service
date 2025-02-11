@@ -16,8 +16,8 @@ type PlaneRepositoryImpl struct {
 	client *db.Client
 }
 
-func NewPlaneRepositoryImpl(client *db.Client) ports.PassengerRepository {
-	return &PassengerRepositoryImpl{client: client}
+func NewPlaneRepositoryImpl(client *db.Client) ports.PlaneRepository {
+	return &PlaneRepositoryImpl{client: client}
 }
 
 func (r *PassengerRepositoryImpl) GetAllPlanes() ([]entities.Plane, error) {
@@ -34,4 +34,29 @@ func (r *PassengerRepositoryImpl) GetAllPlanes() ([]entities.Plane, error) {
 	}
 
 	return plane, nil
+}
+
+func (r *PassengerRepositoryImpl) AddPlane(request entities.AddPlaneRequest) error {
+	// Will be added
+	return nil
+}
+
+func (r *PassengerRepositoryImpl) SetplaneStatus(request entities.SetPlaneStatusRequest) error {
+	// Will be added
+	return nil
+}
+
+func (s *PassengerRepositoryImpl) GetPlaneByRegistration(request entities.GetPlaneByRegistrationRequest) (entities.Plane, error) {
+	// Will be added
+	return entities.Plane{}, nil
+}
+
+func (s *PassengerRepositoryImpl) GetPlaneByFlightNumber(request entities.GetPlaneByFlightNumberRequest) (entities.Plane, error) {
+	// Will be added
+	return entities.Plane{}, nil
+}
+
+func (s *PassengerRepositoryImpl) GetPlaneByLocation(request entities.GetPlaneByLocationRequest) ([]entities.Plane, error) {
+	// Will be added
+	return []entities.Plane{}, nil
 }

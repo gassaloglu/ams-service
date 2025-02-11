@@ -24,3 +24,11 @@ type GetPlaneByFlightNumberRequest struct {
 type GetPlaneByLocationRequest struct {
 	Location string `json:"location" binding:"required,oneof=On-Flight Hangar Maintenance"`
 }
+
+type AddPlaneRequest struct {
+	Plane Plane
+}
+
+type SetPlaneStatusRequest struct {
+	IsAvailable bool `json:"is_available" binding:"required"`
+}
