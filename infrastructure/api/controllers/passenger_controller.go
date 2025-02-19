@@ -23,19 +23,36 @@ func NewPassengerController(service *services.PassengerService) *PassengerContro
 }
 
 func (c *PassengerController) GetPassengerByID(ctx *gin.Context) {
-	passengerID := ctx.Param("id")
-	if passengerID == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Passenger ID is required"})
+	var request entities.GetPassengerByIdRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	passenger, err := c.service.GetPassengerByID(passengerID)
+	passenger, err := c.service.GetPassengerByID(request)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error getting passenger by ID %s: %v", PASSENGER_LOG_PREFIX, passengerID, err))
+		middlewares.LogError(fmt.Sprintf("%s - Error getting passenger by ID %s: %v", PASSENGER_LOG_PREFIX, request.NationalId, err))
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Passenger not found"})
 		return
 	}
-	middlewares.LogInfo(fmt.Sprintf("%s - Successfully retrieved passenger by ID %s", PASSENGER_LOG_PREFIX, passengerID))
+	middlewares.LogInfo(fmt.Sprintf("%s - Successfully retrieved passenger by ID %s", PASSENGER_LOG_PREFIX, request.NationalId))
+	ctx.JSON(http.StatusOK, passenger)
+}
+
+func (c *PassengerController) GetPassengerByPNR(ctx *gin.Context) {
+	var request entities.GetPassengerByPnrRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	passenger, err := c.service.GetPassengerByPNR(request)
+	if err != nil {
+		middlewares.LogError(fmt.Sprintf("%s - Error getting passenger by PNR %s and surname %s: %v", PASSENGER_LOG_PREFIX, request.PNR, request.Surname, err))
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Passenger not found"})
+		return
+	}
+	middlewares.LogInfo(fmt.Sprintf("%s - Successfully retrieved passenger by PNR %s and surname %s", PASSENGER_LOG_PREFIX, request.PNR, request.Surname))
 	ctx.JSON(http.StatusOK, passenger)
 }
 
@@ -46,7 +63,7 @@ func (c *PassengerController) OnlineCheckInPassenger(ctx *gin.Context) {
 		return
 	}
 
-	err := c.service.OnlineCheckInPassenger(request.PNR, request.Surname)
+	err := c.service.OnlineCheckInPassenger(request)
 	if err != nil {
 		middlewares.LogError(fmt.Sprintf("%s - Error checking in passenger with PNR %s and surname %s: %v", PASSENGER_LOG_PREFIX, request.PNR, request.Surname, err))
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Passenger not found or check-in failed"})

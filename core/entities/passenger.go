@@ -26,3 +26,12 @@ type OnlineCheckInRequest struct {
 	PNR     string `json:"pnr" binding:"required,len=6,alphanum"`
 	Surname string `json:"surname" binding:"required,alpha,min=2,max=50"`
 }
+
+type GetPassengerByPnrRequest struct {
+	PNR     string `json:"pnr" binding:"required,len=6,alphanum"`
+	Surname string `json:"surname" binding:"required,alpha,min=2,max=50"`
+}
+
+type GetPassengerByIdRequest struct {
+	NationalId string `json:"national_id" binding:"required,len=11,numeric"`
+}
