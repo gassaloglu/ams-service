@@ -30,5 +30,6 @@ type AddPlaneRequest struct {
 }
 
 type SetPlaneStatusRequest struct {
-	IsAvailable bool `json:"is_available" binding:"required"`
+	PlaneRegistration string `json:"plane_registration" binding:"required,alphanum"`
+	IsAvailable       bool   `json:"is_available" binding:"required"`
 }

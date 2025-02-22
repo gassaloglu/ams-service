@@ -20,7 +20,7 @@ func NewPlaneRepositoryImpl(client *db.Client) ports.PlaneRepository {
 	return &PlaneRepositoryImpl{client: client}
 }
 
-func (r *PassengerRepositoryImpl) GetAllPlanes() ([]entities.Plane, error) {
+func (r *PlaneRepositoryImpl) GetAllPlanes() ([]entities.Plane, error) {
 	middlewares.LogInfo(fmt.Sprintf("%s - Querying all planes", PASSENGER_LOG_PREFIX))
 
 	ctx := context.Background()
@@ -36,27 +36,27 @@ func (r *PassengerRepositoryImpl) GetAllPlanes() ([]entities.Plane, error) {
 	return plane, nil
 }
 
-func (r *PassengerRepositoryImpl) AddPlane(request entities.AddPlaneRequest) error {
+func (r *PlaneRepositoryImpl) AddPlane(request entities.AddPlaneRequest) error {
 	// Will be added
 	return nil
 }
 
-func (r *PassengerRepositoryImpl) SetplaneStatus(request entities.SetPlaneStatusRequest) error {
+func (r *PlaneRepositoryImpl) SetPlaneStatus(request entities.SetPlaneStatusRequest) error {
 	// Will be added
 	return nil
 }
 
-func (s *PassengerRepositoryImpl) GetPlaneByRegistration(request entities.GetPlaneByRegistrationRequest) (entities.Plane, error) {
+func (r *PlaneRepositoryImpl) GetPlaneByRegistration(request entities.GetPlaneByRegistrationRequest) (entities.Plane, error) {
 	// Will be added
 	return entities.Plane{}, nil
 }
 
-func (s *PassengerRepositoryImpl) GetPlaneByFlightNumber(request entities.GetPlaneByFlightNumberRequest) (entities.Plane, error) {
+func (r *PlaneRepositoryImpl) GetPlaneByFlightNumber(request entities.GetPlaneByFlightNumberRequest) (entities.Plane, error) {
 	// Will be added
 	return entities.Plane{}, nil
 }
 
-func (s *PassengerRepositoryImpl) GetPlaneByLocation(request entities.GetPlaneByLocationRequest) ([]entities.Plane, error) {
+func (r *PlaneRepositoryImpl) GetPlaneByLocation(request entities.GetPlaneByLocationRequest) ([]entities.Plane, error) {
 	// Will be added
 	return []entities.Plane{}, nil
 }
