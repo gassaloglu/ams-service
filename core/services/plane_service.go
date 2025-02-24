@@ -25,9 +25,7 @@ func NewPlaneService(repo PlaneRepository) *PlaneService {
 	return &PlaneService{repo: repo}
 }
 
-// GetAllPlanes retrieves all planes from the repository.
 func (s *PlaneService) GetAllPlanes() ([]entities.Plane, error) {
-
 	planes, err := s.repo.GetAllPlanes()
 	if err != nil {
 		middlewares.LogError(fmt.Sprintf("%s - Error getting all planes: %v", PLANE_LOG_PREFIX, err))
@@ -38,7 +36,6 @@ func (s *PlaneService) GetAllPlanes() ([]entities.Plane, error) {
 }
 
 func (s *PlaneService) GetPlaneByRegistration(request entities.GetPlaneByRegistrationRequest) (entities.Plane, error) {
-
 	plane, err := s.repo.GetPlaneByRegistration(request)
 	if err != nil {
 		middlewares.LogError(fmt.Sprintf("%s - Error getting plane by registration %s: %v", PLANE_LOG_PREFIX, request.PlaneRegistration, err))
@@ -49,7 +46,6 @@ func (s *PlaneService) GetPlaneByRegistration(request entities.GetPlaneByRegistr
 }
 
 func (s *PlaneService) GetPlaneByFlightNumber(request entities.GetPlaneByFlightNumberRequest) (entities.Plane, error) {
-
 	plane, err := s.repo.GetPlaneByFlightNumber(request)
 	if err != nil {
 		middlewares.LogError(fmt.Sprintf("%s - Error getting plane by flight number %s: %v", PLANE_LOG_PREFIX, request.FlightNumber, err))
@@ -60,7 +56,6 @@ func (s *PlaneService) GetPlaneByFlightNumber(request entities.GetPlaneByFlightN
 }
 
 func (s *PlaneService) GetPlaneByLocation(request entities.GetPlaneByLocationRequest) ([]entities.Plane, error) {
-
 	planes, err := s.repo.GetPlaneByLocation(request)
 	if err != nil {
 		middlewares.LogError(fmt.Sprintf("%s - Error getting planes by location %s: %v", PLANE_LOG_PREFIX, request.Location, err))
@@ -70,7 +65,22 @@ func (s *PlaneService) GetPlaneByLocation(request entities.GetPlaneByLocationReq
 	return planes, nil
 }
 
-func (s *PlaneService) SetPlaneStatus(request entities.SetPlaneStatusRequest) ([]entities.Plane, error) {
-	//Will be added
-	return nil, nil
+func (s *PlaneService) AddPlane(request entities.AddPlaneRequest) error {
+	err := s.repo.AddPlane(request)
+	if err != nil {
+		middlewares.LogError(fmt.Sprintf("%s - Error adding plane: %v", PLANE_LOG_PREFIX, err))
+		return err
+	}
+	middlewares.LogInfo(fmt.Sprintf("%s - Successfully added plane", PLANE_LOG_PREFIX))
+	return nil
+}
+
+func (s *PlaneService) SetPlaneStatus(request entities.SetPlaneStatusRequest) error {
+	err := s.repo.SetPlaneStatus(request)
+	if err != nil {
+		middlewares.LogError(fmt.Sprintf("%s - Error setting plane status: %v", PLANE_LOG_PREFIX, err))
+		return err
+	}
+	middlewares.LogInfo(fmt.Sprintf("%s - Successfully set plane status", PLANE_LOG_PREFIX))
+	return nil
 }

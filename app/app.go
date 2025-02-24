@@ -30,6 +30,7 @@ func Run() {
 
 	var userRepo ports.UserRepository
 	var passengerRepo ports.PassengerRepository
+	var planeRepo ports.PlaneRepository
 
 	// Initialize database connection based on configuration
 	switch cfg.Database.Type {
@@ -42,6 +43,7 @@ func Run() {
 		defer db.Close()
 		userRepo = postgres.NewUserRepositoryImpl(db)
 		passengerRepo = postgres.NewPassengerRepositoryImpl(db)
+		planeRepo = postgres.NewPlaneRepositoryImpl(db)
 	case "mongodb":
 		clientOptions := options.Client().ApplyURI(cfg.Database.URI)
 		client, err := mongo.Connect(context.Background(), clientOptions)
@@ -51,11 +53,13 @@ func Run() {
 		defer client.Disconnect(context.Background())
 		userRepo = mongodb.NewUserRepositoryImpl(client, cfg.Database.Name, "users")
 		passengerRepo = mongodb.NewPassengerRepositoryImpl(client, cfg.Database.Name, "passengers")
+		planeRepo = mongodb.NewPlaneRepositoryImpl(client, cfg.Database.Name, "planes")
 	case "firebase":
 		// Initialize Firebase client here
 		// client := initializeFirebaseClient(cfg.Firebase.CredentialsFile)
 		// userRepo = firebase.NewUserRepositoryImpl(client)
 		// passengerRepo = firebase.NewPassengerRepositoryImpl(client)
+		// planeRepo = firebase.NewPlaneRepositoryImpl(client)
 		log.Fatalf("%s - Firebase support is not implemented yet", LOG_PREFIX)
 	default:
 		log.Fatalf("%s - Unsupported database type: %s", LOG_PREFIX, cfg.Database.Type)
@@ -64,10 +68,12 @@ func Run() {
 	// Initialize services
 	passengerService := services.NewPassengerService(passengerRepo)
 	userService := services.NewUserService(userRepo)
+	planeService := services.NewPlaneService(planeRepo)
 
 	// Initialize controllers
 	passengerController := controllers.NewPassengerController(passengerService)
 	userController := controllers.NewUserController(userService)
+	planeController := controllers.NewPlaneController(planeService)
 
 	// Setup router
 	router := gin.Default()
@@ -84,6 +90,16 @@ func Run() {
 	userRoute := router.Group("/user")
 	{
 		userRoute.POST("/register", userController.RegisterUser)
+	}
+
+	planeRoute := router.Group("/plane")
+	{
+		planeRoute.GET("/all", planeController.GetAllPlanes)
+		planeRoute.POST("/add", planeController.AddPlane)
+		planeRoute.PUT("/status", planeController.SetPlaneStatus)
+		planeRoute.GET("/registration", planeController.GetPlaneByRegistration)
+		planeRoute.GET("/flightnumber", planeController.GetPlaneByFlightNumber)
+		planeRoute.GET("/location", planeController.GetPlaneByLocation)
 	}
 
 	// Run the server
