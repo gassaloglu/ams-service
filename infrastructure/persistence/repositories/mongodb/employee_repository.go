@@ -40,7 +40,7 @@ func (r *EmployeeRepositoryImpl) RegisterEmployee(request entities.RegisterEmplo
 		return err
 	}
 
-	// Create a new plane document
+	// Create a new employee
 	newEmployee := entities.Employee{
 		ID:               request.Employee.ID,
 		EmployeeID:       request.Employee.EmployeeID,
@@ -81,7 +81,7 @@ func (r *EmployeeRepositoryImpl) GetEmployeeByNationalID(request entities.GetEmp
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	filter := bson.M{"national_id": request.EmployeeID}
+	filter := bson.M{"employee_id": request.EmployeeID}
 
 	var employee entities.Employee
 	err := r.collection.FindOne(ctx, filter).Decode(&employee)
