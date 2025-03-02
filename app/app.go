@@ -42,21 +42,6 @@ func Run() {
 		passengerRepo = postgres.NewPassengerRepositoryImpl(db)
 		planeRepo = postgres.NewPlaneRepositoryImpl(db)
 		flightRepo = postgres.NewFlightRepositoryImpl(db)
-		/*
-		   case "mongodb":
-		       clientOptions := options.Client().ApplyURI(cfg.Database.URI)
-		       client, err := mongo.Connect(context.Background(), clientOptions)
-		       if err != nil {
-		           log.Fatalf("%s - Failed to connect to MongoDB: %v", LOG_PREFIX, err)
-		       }
-		       defer client.Disconnect(context.Background())
-		       userRepo = mongodb.NewUserRepositoryImpl(client, cfg.Database.Name, "users")
-		       passengerRepo = mongodb.NewPassengerRepositoryImpl(client, cfg.Database.Name, "passengers")
-		       planeRepo = mongodb.NewPlaneRepositoryImpl(client, cfg.Database.Name, "planes")
-		       flightRepo = mongodb.NewFlightRepositoryImpl(client, cfg.Database.Name, "flights")
-		   case "firebase":
-		       log.Fatalf("%s - Firebase support is not implemented yet", LOG_PREFIX)
-		*/
 	default:
 		log.Fatalf("%s - Unsupported database type: %s", LOG_PREFIX, cfg.Database.Type)
 	}
@@ -78,34 +63,11 @@ func Run() {
 	router.Use(middlewares.Logger())
 	router.Use(middlewares.ErrorHandler())
 
-	// Setup routes
-	passengerRoute := router.Group("/passenger")
-	{
-		passengerRoute.POST("/checkin", passengerController.OnlineCheckInPassenger)
-		passengerRoute.GET("/id", passengerController.GetPassengerByID)
-		passengerRoute.GET("/pnr", passengerController.GetPassengerByPNR)
-	}
-
-	userRoute := router.Group("/user")
-	{
-		userRoute.POST("/register", userController.RegisterUser)
-	}
-
-	planeRoute := router.Group("/plane")
-	{
-		planeRoute.GET("/all", planeController.GetAllPlanes)
-		planeRoute.POST("/add", planeController.AddPlane)
-		planeRoute.PUT("/status", planeController.SetPlaneStatus)
-		planeRoute.GET("/registration", planeController.GetPlaneByRegistration)
-		planeRoute.GET("/flightnumber", planeController.GetPlaneByFlightNumber)
-		planeRoute.GET("/location", planeController.GetPlaneByLocation)
-	}
-
-	flightRoute := router.Group("/flight")
-	{
-		flightRoute.GET("/specific", flightController.GetSpecificFlight)
-		flightRoute.GET("/all", flightController.GetAllFlights) // Add this line
-	}
+	// Register routes
+	RegisterPlaneRoutes(router, planeController)
+	RegisterFlightRoutes(router, flightController)
+	RegisterPassengerRoutes(router, passengerController)
+	RegisterUserRoutes(router, userController)
 
 	// Run the server
 	err = router.Run(fmt.Sprintf(":%s", cfg.ServerPort))
