@@ -38,3 +38,20 @@ func (c *EmployeeController) GetEmployeeByID(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, employee)
 }
+
+func (c *EmployeeController) RegisterEmployee(ctx *gin.Context) {
+	var request entities.RegisterEmployeeRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		middlewares.LogError(EMPLOYEE_LOG_PREFIX + " - Error binding JSON: " + err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	err := c.service.RegisterEmployee(request)
+	if err != nil {
+		middlewares.LogError(EMPLOYEE_LOG_PREFIX + " - Error registering employee: " + err.Error())
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Server error"})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"message": "Employee registered successfully"})
+}

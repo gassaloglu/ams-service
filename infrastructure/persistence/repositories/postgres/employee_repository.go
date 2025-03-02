@@ -33,3 +33,28 @@ func (r *EmployeeRepositoryImpl) GetEmployeeByID(request entities.GetEmployeeByI
 
 	return employee, nil
 }
+
+func (r *EmployeeRepositoryImpl) RegisterEmployee(request entities.RegisterEmployeeRequest) error {
+	middlewares.LogInfo(fmt.Sprintf("%s - Registering new employee", EMPLOYEE_LOG_PREFIX))
+
+	// Check if an employee with the same ID already exists
+	query := `SELECT id FROM employees WHERE employee_id = $1`
+	row := r.db.QueryRow(query, request.Employee.ID)
+	var existingID uint
+	err := row.Scan(&existingID)
+	if err == nil {
+		middlewares.LogError(fmt.Sprintf("%s - Employee with ID %d already exists", EMPLOYEE_LOG_PREFIX, request.Employee.ID))
+		return fmt.Errorf("employee with ID %d already exists", request.Employee.ID)
+	} else if err != sql.ErrNoRows {
+		middlewares.LogError(fmt.Sprintf("%s - Error checking for existing employee: %v", EMPLOYEE_LOG_PREFIX, err))
+		return err
+	}
+
+	query = `INSERT INTO employees (employee_id, name, surname, email, phone, address, gender, birth_date, hire_date, position, department, salary, status, manager_id, emergency_contact, emergency_phone, profile_image_url, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`
+	_, err = r.db.Exec(query, request.Employee.EmployeeID, request.Employee.Name, request.Employee.Surname, request.Employee.Email, request.Employee.Phone, request.Employee.Address, request.Employee.Gender, request.Employee.BirthDate, request.Employee.HireDate, request.Employee.Position, request.Employee.Department, request.Employee.Salary, request.Employee.Status, request.Employee.ManagerID, request.Employee.EmergencyContact, request.Employee.EmergencyPhone, request.Employee.ProfileImageURL, request.Employee.CreatedAt, request.Employee.UpdatedAt)
+	if err != nil {
+		middlewares.LogError(fmt.Sprintf("%s - Error registering employee: %v", EMPLOYEE_LOG_PREFIX, err))
+		return err
+	}
+	return nil
+}
