@@ -5,18 +5,14 @@ import (
 	"ams-service/config"
 	"ams-service/core/services"
 	"ams-service/infrastructure/api/controllers"
-	"ams-service/infrastructure/persistence/repositories/mongodb"
 	"ams-service/infrastructure/persistence/repositories/postgres"
 	"ams-service/middlewares"
-	"context"
 	"database/sql"
 	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq" // Import the PostgreSQL driver
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var LOG_PREFIX string = "app.go"
@@ -32,6 +28,7 @@ func Run() {
 	var passengerRepo ports.PassengerRepository
 	var planeRepo ports.PlaneRepository
 	var employeeRepo ports.EmployeeRepository
+	var flightRepo ports.FlightRepository
 
 	// Initialize database connection based on configuration
 	switch cfg.Database.Type {
@@ -45,26 +42,7 @@ func Run() {
 		userRepo = postgres.NewUserRepositoryImpl(db)
 		passengerRepo = postgres.NewPassengerRepositoryImpl(db)
 		planeRepo = postgres.NewPlaneRepositoryImpl(db)
-		employeeRepo = postgres.NewEmployeeRepositoryImpl(db)
-	case "mongodb":
-		clientOptions := options.Client().ApplyURI(cfg.Database.URI)
-		client, err := mongo.Connect(context.Background(), clientOptions)
-		if err != nil {
-			log.Fatalf("%s - Failed to connect to MongoDB: %v", LOG_PREFIX, err)
-		}
-		defer client.Disconnect(context.Background())
-		userRepo = mongodb.NewUserRepositoryImpl(client, cfg.Database.Name, "users")
-		passengerRepo = mongodb.NewPassengerRepositoryImpl(client, cfg.Database.Name, "passengers")
-		planeRepo = mongodb.NewPlaneRepositoryImpl(client, cfg.Database.Name, "planes")
-		// employeeRepo = mongodb.NewEmployeeRepositoryImpl(client, cfg.Database.Name, "employees") // Implement MongoDB repository if needed
-	case "firebase":
-		// Initialize Firebase client here
-		// client := initializeFirebaseClient(cfg.Firebase.CredentialsFile)
-		// userRepo = firebase.NewUserRepositoryImpl(client)
-		// passengerRepo = firebase.NewPassengerRepositoryImpl(client)
-		// planeRepo = firebase.NewPlaneRepositoryImpl(client)
-		// employeeRepo = firebase.NewEmployeeRepositoryImpl(client) // Implement Firebase repository if needed
-		log.Fatalf("%s - Firebase support is not implemented yet", LOG_PREFIX)
+		flightRepo = postgres.NewFlightRepositoryImpl(db)
 	default:
 		log.Fatalf("%s - Unsupported database type: %s", LOG_PREFIX, cfg.Database.Type)
 	}
@@ -74,39 +52,25 @@ func Run() {
 	userService := services.NewUserService(userRepo)
 	planeService := services.NewPlaneService(planeRepo)
 	employeeService := services.NewEmployeeService(employeeRepo)
+	flightService := services.NewFlightService(flightRepo)
 
 	// Initialize controllers
 	passengerController := controllers.NewPassengerController(passengerService)
 	userController := controllers.NewUserController(userService)
 	planeController := controllers.NewPlaneController(planeService)
 	employeeController := controllers.NewEmployeeController(employeeService)
+	flightController := controllers.NewFlightController(flightService)
 
 	// Setup router
 	router := gin.Default()
 	router.Use(middlewares.Logger())
 	router.Use(middlewares.ErrorHandler())
 
-	// Setup routes
-	passengerRoute := router.Group("/passenger")
-	{
-		passengerRoute.POST("/checkin", passengerController.OnlineCheckInPassenger)
-		passengerRoute.GET("/:id", passengerController.GetPassengerByID)
-	}
-
-	userRoute := router.Group("/user")
-	{
-		userRoute.POST("/register", userController.RegisterUser)
-	}
-
-	planeRoute := router.Group("/plane")
-	{
-		planeRoute.GET("/all", planeController.GetAllPlanes)
-		planeRoute.POST("/add", planeController.AddPlane)
-		planeRoute.PUT("/status", planeController.SetPlaneStatus)
-		planeRoute.GET("/registration", planeController.GetPlaneByRegistration)
-		planeRoute.GET("/flightnumber", planeController.GetPlaneByFlightNumber)
-		planeRoute.GET("/location", planeController.GetPlaneByLocation)
-	}
+	// Register routes
+	RegisterPlaneRoutes(router, planeController)
+	RegisterFlightRoutes(router, flightController)
+	RegisterPassengerRoutes(router, passengerController)
+	RegisterUserRoutes(router, userController)
 
 	employeeRoute := router.Group("/employee")
 	{

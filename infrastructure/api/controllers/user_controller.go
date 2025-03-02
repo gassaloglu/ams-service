@@ -23,16 +23,16 @@ func NewUserController(service *services.UserService) *UserController {
 func (c *UserController) RegisterUser(ctx *gin.Context) {
 	var user entities.User
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "TODO: Error binding JSON"})
 		return
 	}
 
 	err := c.service.RegisterUser(user)
 	if err != nil {
 		middlewares.LogError(fmt.Sprintf("%s - Error registering user: %v", USER_LOG_PREFIX, err))
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Registration failed"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "TODO: Registration failed"})
 		return
 	}
 	middlewares.LogInfo(fmt.Sprintf("%s - Successfully registered user: %v", USER_LOG_PREFIX, user))
-	ctx.JSON(http.StatusOK, gin.H{"message": "Registration successful"})
+	ctx.JSON(http.StatusOK, gin.H{"message": "TODO: Registration successful"})
 }
