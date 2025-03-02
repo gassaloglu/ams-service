@@ -23,15 +23,15 @@ type Passenger struct {
 }
 
 type OnlineCheckInRequest struct {
-	PNR     string `json:"pnr" binding:"required,len=6,alphanum"`
-	Surname string `json:"surname" binding:"required,alpha,min=2,max=50"`
+	PNR     string `json:"pnr" binding:"len=6,alphanum"`
+	Surname string `json:"surname" binding:"alpha,min=2,max=50"`
 }
 
 type GetPassengerByPnrRequest struct {
-	PNR     string `json:"pnr" binding:"required,len=6,alphanum"`
-	Surname string `json:"surname" binding:"required,alpha,min=2,max=50"`
+	PNR     string `form:"pnr" binding:"required,len=6,alphanum"`
+	Surname string `form:"surname" binding:"required,alpha,min=2,max=50"`
 }
 
 type GetPassengerByIdRequest struct {
-	NationalId string `json:"national_id" binding:"required,len=11,numeric"`
+	NationalId string `form:"national_id" binding:"required,len=11,numeric"`
 }
