@@ -10,6 +10,7 @@ var EMPLOYEE_LOG_PREFIX string = "employee_service.go"
 
 type EmployeeRepository interface {
 	GetEmployeeByID(request entities.GetEmployeeByIdRequest) (entities.Employee, error)
+	RegisterEmployee(request entities.RegisterEmployeeRequest) error
 }
 
 type EmployeeService struct {
@@ -27,4 +28,13 @@ func (s *EmployeeService) GetEmployeeByID(request entities.GetEmployeeByIdReques
 		return entities.Employee{}, err
 	}
 	return employee, nil
+}
+
+func (s *EmployeeService) RegisterEmployee(request entities.RegisterEmployeeRequest) error {
+	err := s.repo.RegisterEmployee(request)
+	if err != nil {
+		middlewares.LogError(fmt.Sprintf("%s - Error registering employee: %v", EMPLOYEE_LOG_PREFIX, err))
+		return err
+	}
+	return nil
 }

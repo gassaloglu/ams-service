@@ -30,3 +30,7 @@ type Employee struct {
 type GetEmployeeByIdRequest struct {
 	ID uint `json:"id" binding:"required"`
 }
+
+type RegisterEmployeeRequest struct {
+	Employee Employee
+}

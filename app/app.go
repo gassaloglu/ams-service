@@ -111,6 +111,7 @@ func Run() {
 	employeeRoute := router.Group("/employee")
 	{
 		employeeRoute.GET("/:id", employeeController.GetEmployeeByID)
+		employeeRoute.POST("/register", employeeController.RegisterEmployee)
 	}
 
 	// Run the server

@@ -19,7 +19,7 @@ func NewPlaneRepositoryImpl(db *sql.DB) ports.PlaneRepository {
 }
 
 func (r *PlaneRepositoryImpl) GetAllPlanes() ([]entities.Plane, error) {
-	middlewares.LogInfo(fmt.Sprintf("Getting all planes"))
+	middlewares.LogInfo("Getting all planes")
 
 	query := "SELECT * FROM planes"
 	rows, err := r.db.Query(query)
