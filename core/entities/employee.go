@@ -27,14 +27,6 @@ type Employee struct {
 	UpdatedAt        time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
-type RegisterEmployeeRequest struct {
-	Employee Employee
-}
-
 type GetEmployeeByIdRequest struct {
-	ID uint `json:"id" gorm:"primaryKey;autoIncrement"`
-}
-
-type GetEmployeeByNationalIdRequest struct {
-	EmployeeID string `json:"employee_id" gorm:"unique;not null"`
+	ID uint `json:"id" binding:"required"`
 }

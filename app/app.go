@@ -31,6 +31,7 @@ func Run() {
 	var userRepo ports.UserRepository
 	var passengerRepo ports.PassengerRepository
 	var planeRepo ports.PlaneRepository
+	var employeeRepo ports.EmployeeRepository
 
 	// Initialize database connection based on configuration
 	switch cfg.Database.Type {
@@ -44,6 +45,7 @@ func Run() {
 		userRepo = postgres.NewUserRepositoryImpl(db)
 		passengerRepo = postgres.NewPassengerRepositoryImpl(db)
 		planeRepo = postgres.NewPlaneRepositoryImpl(db)
+		employeeRepo = postgres.NewEmployeeRepositoryImpl(db)
 	case "mongodb":
 		clientOptions := options.Client().ApplyURI(cfg.Database.URI)
 		client, err := mongo.Connect(context.Background(), clientOptions)
@@ -54,12 +56,14 @@ func Run() {
 		userRepo = mongodb.NewUserRepositoryImpl(client, cfg.Database.Name, "users")
 		passengerRepo = mongodb.NewPassengerRepositoryImpl(client, cfg.Database.Name, "passengers")
 		planeRepo = mongodb.NewPlaneRepositoryImpl(client, cfg.Database.Name, "planes")
+		// employeeRepo = mongodb.NewEmployeeRepositoryImpl(client, cfg.Database.Name, "employees") // Implement MongoDB repository if needed
 	case "firebase":
 		// Initialize Firebase client here
 		// client := initializeFirebaseClient(cfg.Firebase.CredentialsFile)
 		// userRepo = firebase.NewUserRepositoryImpl(client)
 		// passengerRepo = firebase.NewPassengerRepositoryImpl(client)
 		// planeRepo = firebase.NewPlaneRepositoryImpl(client)
+		// employeeRepo = firebase.NewEmployeeRepositoryImpl(client) // Implement Firebase repository if needed
 		log.Fatalf("%s - Firebase support is not implemented yet", LOG_PREFIX)
 	default:
 		log.Fatalf("%s - Unsupported database type: %s", LOG_PREFIX, cfg.Database.Type)
@@ -69,11 +73,13 @@ func Run() {
 	passengerService := services.NewPassengerService(passengerRepo)
 	userService := services.NewUserService(userRepo)
 	planeService := services.NewPlaneService(planeRepo)
+	employeeService := services.NewEmployeeService(employeeRepo)
 
 	// Initialize controllers
 	passengerController := controllers.NewPassengerController(passengerService)
 	userController := controllers.NewUserController(userService)
 	planeController := controllers.NewPlaneController(planeService)
+	employeeController := controllers.NewEmployeeController(employeeService)
 
 	// Setup router
 	router := gin.Default()
@@ -100,6 +106,11 @@ func Run() {
 		planeRoute.GET("/registration", planeController.GetPlaneByRegistration)
 		planeRoute.GET("/flightnumber", planeController.GetPlaneByFlightNumber)
 		planeRoute.GET("/location", planeController.GetPlaneByLocation)
+	}
+
+	employeeRoute := router.Group("/employee")
+	{
+		employeeRoute.GET("/:id", employeeController.GetEmployeeByID)
 	}
 
 	// Run the server
