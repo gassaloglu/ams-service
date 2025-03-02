@@ -52,7 +52,6 @@ func Run() {
 	planeService := services.NewPlaneService(planeRepo)
 	flightService := services.NewFlightService(flightRepo)
 
-
 	// Initialize controllers
 	passengerController := controllers.NewPassengerController(passengerService)
 	userController := controllers.NewUserController(userService)
@@ -69,16 +68,6 @@ func Run() {
 	RegisterFlightRoutes(router, flightController)
 	RegisterPassengerRoutes(router, passengerController)
 	RegisterUserRoutes(router, userController)
-
-	planeRoute := router.Group("/plane")
-	{
-		planeRoute.GET("/all", planeController.GetAllPlanes)
-		planeRoute.POST("/add", planeController.AddPlane)
-		planeRoute.PUT("/status", planeController.SetPlaneStatus)
-		planeRoute.GET("/registration", planeController.GetPlaneByRegistration)
-		planeRoute.GET("/flightnumber", planeController.GetPlaneByFlightNumber)
-		planeRoute.GET("/location", planeController.GetPlaneByLocation)
-	}
 
 	// Run the server
 	err = router.Run(fmt.Sprintf(":%s", cfg.ServerPort))
