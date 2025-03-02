@@ -43,6 +43,7 @@ func Run() {
 		passengerRepo = postgres.NewPassengerRepositoryImpl(db)
 		planeRepo = postgres.NewPlaneRepositoryImpl(db)
 		flightRepo = postgres.NewFlightRepositoryImpl(db)
+		employeeRepo = postgres.NewEmployeeRepositoryImpl(db)
 	default:
 		log.Fatalf("%s - Unsupported database type: %s", LOG_PREFIX, cfg.Database.Type)
 	}
@@ -71,12 +72,7 @@ func Run() {
 	RegisterFlightRoutes(router, flightController)
 	RegisterPassengerRoutes(router, passengerController)
 	RegisterUserRoutes(router, userController)
-
-	employeeRoute := router.Group("/employee")
-	{
-		employeeRoute.GET("/:id", employeeController.GetEmployeeByID)
-		employeeRoute.POST("/register", employeeController.RegisterEmployee)
-	}
+	RegisterEmployeeRoutes(router, employeeController)
 
 	// Run the server
 	err = router.Run(fmt.Sprintf(":%s", cfg.ServerPort))
