@@ -27,6 +27,7 @@ func Run() {
 	var userRepo ports.UserRepository
 	var passengerRepo ports.PassengerRepository
 	var planeRepo ports.PlaneRepository
+	var employeeRepo ports.EmployeeRepository
 	var flightRepo ports.FlightRepository
 
 	// Initialize database connection based on configuration
@@ -50,12 +51,14 @@ func Run() {
 	passengerService := services.NewPassengerService(passengerRepo)
 	userService := services.NewUserService(userRepo)
 	planeService := services.NewPlaneService(planeRepo)
+	employeeService := services.NewEmployeeService(employeeRepo)
 	flightService := services.NewFlightService(flightRepo)
 
 	// Initialize controllers
 	passengerController := controllers.NewPassengerController(passengerService)
 	userController := controllers.NewUserController(userService)
 	planeController := controllers.NewPlaneController(planeService)
+	employeeController := controllers.NewEmployeeController(employeeService)
 	flightController := controllers.NewFlightController(flightService)
 
 	// Setup router
@@ -68,6 +71,11 @@ func Run() {
 	RegisterFlightRoutes(router, flightController)
 	RegisterPassengerRoutes(router, passengerController)
 	RegisterUserRoutes(router, userController)
+
+	employeeRoute := router.Group("/employee")
+	{
+		employeeRoute.GET("/:id", employeeController.GetEmployeeByID)
+	}
 
 	// Run the server
 	err = router.Run(fmt.Sprintf(":%s", cfg.ServerPort))
