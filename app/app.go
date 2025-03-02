@@ -5,18 +5,14 @@ import (
 	"ams-service/config"
 	"ams-service/core/services"
 	"ams-service/infrastructure/api/controllers"
-	"ams-service/infrastructure/persistence/repositories/mongodb"
 	"ams-service/infrastructure/persistence/repositories/postgres"
 	"ams-service/middlewares"
-	"context"
 	"database/sql"
 	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq" // Import the PostgreSQL driver
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var LOG_PREFIX string = "app.go"
@@ -31,6 +27,7 @@ func Run() {
 	var userRepo ports.UserRepository
 	var passengerRepo ports.PassengerRepository
 	var planeRepo ports.PlaneRepository
+	var flightRepo ports.FlightRepository
 
 	// Initialize database connection based on configuration
 	switch cfg.Database.Type {
@@ -44,23 +41,22 @@ func Run() {
 		userRepo = postgres.NewUserRepositoryImpl(db)
 		passengerRepo = postgres.NewPassengerRepositoryImpl(db)
 		planeRepo = postgres.NewPlaneRepositoryImpl(db)
-	case "mongodb":
-		clientOptions := options.Client().ApplyURI(cfg.Database.URI)
-		client, err := mongo.Connect(context.Background(), clientOptions)
-		if err != nil {
-			log.Fatalf("%s - Failed to connect to MongoDB: %v", LOG_PREFIX, err)
-		}
-		defer client.Disconnect(context.Background())
-		userRepo = mongodb.NewUserRepositoryImpl(client, cfg.Database.Name, "users")
-		passengerRepo = mongodb.NewPassengerRepositoryImpl(client, cfg.Database.Name, "passengers")
-		planeRepo = mongodb.NewPlaneRepositoryImpl(client, cfg.Database.Name, "planes")
-	case "firebase":
-		// Initialize Firebase client here
-		// client := initializeFirebaseClient(cfg.Firebase.CredentialsFile)
-		// userRepo = firebase.NewUserRepositoryImpl(client)
-		// passengerRepo = firebase.NewPassengerRepositoryImpl(client)
-		// planeRepo = firebase.NewPlaneRepositoryImpl(client)
-		log.Fatalf("%s - Firebase support is not implemented yet", LOG_PREFIX)
+		flightRepo = postgres.NewFlightRepositoryImpl(db)
+		/*
+		   case "mongodb":
+		       clientOptions := options.Client().ApplyURI(cfg.Database.URI)
+		       client, err := mongo.Connect(context.Background(), clientOptions)
+		       if err != nil {
+		           log.Fatalf("%s - Failed to connect to MongoDB: %v", LOG_PREFIX, err)
+		       }
+		       defer client.Disconnect(context.Background())
+		       userRepo = mongodb.NewUserRepositoryImpl(client, cfg.Database.Name, "users")
+		       passengerRepo = mongodb.NewPassengerRepositoryImpl(client, cfg.Database.Name, "passengers")
+		       planeRepo = mongodb.NewPlaneRepositoryImpl(client, cfg.Database.Name, "planes")
+		       flightRepo = mongodb.NewFlightRepositoryImpl(client, cfg.Database.Name, "flights")
+		   case "firebase":
+		       log.Fatalf("%s - Firebase support is not implemented yet", LOG_PREFIX)
+		*/
 	default:
 		log.Fatalf("%s - Unsupported database type: %s", LOG_PREFIX, cfg.Database.Type)
 	}
@@ -69,11 +65,13 @@ func Run() {
 	passengerService := services.NewPassengerService(passengerRepo)
 	userService := services.NewUserService(userRepo)
 	planeService := services.NewPlaneService(planeRepo)
+	flightService := services.NewFlightService(flightRepo)
 
 	// Initialize controllers
 	passengerController := controllers.NewPassengerController(passengerService)
 	userController := controllers.NewUserController(userService)
 	planeController := controllers.NewPlaneController(planeService)
+	flightController := controllers.NewFlightController(flightService)
 
 	// Setup router
 	router := gin.Default()
@@ -84,7 +82,8 @@ func Run() {
 	passengerRoute := router.Group("/passenger")
 	{
 		passengerRoute.POST("/checkin", passengerController.OnlineCheckInPassenger)
-		passengerRoute.GET("/:id", passengerController.GetPassengerByID)
+		passengerRoute.GET("/id", passengerController.GetPassengerByID)
+		passengerRoute.GET("/pnr", passengerController.GetPassengerByPNR)
 	}
 
 	userRoute := router.Group("/user")
@@ -94,12 +93,18 @@ func Run() {
 
 	planeRoute := router.Group("/plane")
 	{
-		planeRoute.GET("/", planeController.GetAllPlanes)
-		planeRoute.POST("/", planeController.AddPlane)
+		planeRoute.GET("/all", planeController.GetAllPlanes)
+		planeRoute.POST("/add", planeController.AddPlane)
 		planeRoute.PUT("/status", planeController.SetPlaneStatus)
 		planeRoute.GET("/registration", planeController.GetPlaneByRegistration)
 		planeRoute.GET("/flightnumber", planeController.GetPlaneByFlightNumber)
 		planeRoute.GET("/location", planeController.GetPlaneByLocation)
+	}
+
+	flightRoute := router.Group("/flight")
+	{
+		flightRoute.GET("/specific", flightController.GetSpecificFlight)
+		flightRoute.GET("/all", flightController.GetAllFlights) // Add this line
 	}
 
 	// Run the server

@@ -1,6 +1,6 @@
 package entities
 
-type FlightEntity struct {
+type Flight struct {
 	FlightNumber          string  `json:"flight_number" binding:"required,alphanum,max=6"`
 	DepartureAirport      string  `json:"departure_airport" binding:"required,alpha,len=3"`
 	DestinationAirport    string  `json:"destination_airport" binding:"required,alpha,len=3,nefield=DepartureAirport"`
@@ -13,7 +13,7 @@ type FlightEntity struct {
 	Price                 float32 `json:"price" binding:"required,gte=0"`
 }
 
-type specificFlightRequestEntity struct {
-	FlightNumber      string `json:"flight_number" binding:"required,alphanum,max=6"`
-	DepartureDateTime string `json:"departure_datetime" binding:"required,datetime=2006-01-02T15:04"`
+type GetSpecificFlightRequest struct {
+	FlightNumber      string `form:"flightNumber" binding:"required"`
+	DepartureDateTime string `form:"departureDateTime" binding:"required"`
 }
