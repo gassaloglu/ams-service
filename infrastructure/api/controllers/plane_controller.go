@@ -26,6 +26,7 @@ func (c *PlaneController) GetAllPlanes(ctx *gin.Context) {
 	if err != nil {
 		middlewares.LogError(PLANE_LOG_PREFIX + " - Error getting all planes: " + err.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "TODO: Error getting all planes"})
+
 		return
 	}
 	ctx.JSON(http.StatusOK, planes)
