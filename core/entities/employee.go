@@ -32,5 +32,5 @@ type GetEmployeeByIdRequest struct {
 }
 
 type RegisterEmployeeRequest struct {
-	Employee Employee
+	Employee Employee //
 }
