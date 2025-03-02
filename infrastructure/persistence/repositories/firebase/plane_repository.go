@@ -1,5 +1,6 @@
 package firebase
 
+/*
 import (
 	"ams-service/application/ports"
 	"ams-service/core/entities"
@@ -163,3 +164,4 @@ func (r *PlaneRepositoryImpl) GetPlaneByLocation(request entities.GetPlaneByLoca
 
 	return filteredPlanes, nil
 }
+*/

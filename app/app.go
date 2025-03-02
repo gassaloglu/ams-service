@@ -5,18 +5,14 @@ import (
 	"ams-service/config"
 	"ams-service/core/services"
 	"ams-service/infrastructure/api/controllers"
-	"ams-service/infrastructure/persistence/repositories/mongodb"
 	"ams-service/infrastructure/persistence/repositories/postgres"
 	"ams-service/middlewares"
-	"context"
 	"database/sql"
 	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq" // Import the PostgreSQL driver
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var LOG_PREFIX string = "app.go"
@@ -31,6 +27,7 @@ func Run() {
 	var userRepo ports.UserRepository
 	var passengerRepo ports.PassengerRepository
 	var planeRepo ports.PlaneRepository
+	var flightRepo ports.FlightRepository
 
 	// Initialize database connection based on configuration
 	switch cfg.Database.Type {
@@ -44,23 +41,7 @@ func Run() {
 		userRepo = postgres.NewUserRepositoryImpl(db)
 		passengerRepo = postgres.NewPassengerRepositoryImpl(db)
 		planeRepo = postgres.NewPlaneRepositoryImpl(db)
-	case "mongodb":
-		clientOptions := options.Client().ApplyURI(cfg.Database.URI)
-		client, err := mongo.Connect(context.Background(), clientOptions)
-		if err != nil {
-			log.Fatalf("%s - Failed to connect to MongoDB: %v", LOG_PREFIX, err)
-		}
-		defer client.Disconnect(context.Background())
-		userRepo = mongodb.NewUserRepositoryImpl(client, cfg.Database.Name, "users")
-		passengerRepo = mongodb.NewPassengerRepositoryImpl(client, cfg.Database.Name, "passengers")
-		planeRepo = mongodb.NewPlaneRepositoryImpl(client, cfg.Database.Name, "planes")
-	case "firebase":
-		// Initialize Firebase client here
-		// client := initializeFirebaseClient(cfg.Firebase.CredentialsFile)
-		// userRepo = firebase.NewUserRepositoryImpl(client)
-		// passengerRepo = firebase.NewPassengerRepositoryImpl(client)
-		// planeRepo = firebase.NewPlaneRepositoryImpl(client)
-		log.Fatalf("%s - Firebase support is not implemented yet", LOG_PREFIX)
+		flightRepo = postgres.NewFlightRepositoryImpl(db)
 	default:
 		log.Fatalf("%s - Unsupported database type: %s", LOG_PREFIX, cfg.Database.Type)
 	}
@@ -69,28 +50,25 @@ func Run() {
 	passengerService := services.NewPassengerService(passengerRepo)
 	userService := services.NewUserService(userRepo)
 	planeService := services.NewPlaneService(planeRepo)
+	flightService := services.NewFlightService(flightRepo)
+
 
 	// Initialize controllers
 	passengerController := controllers.NewPassengerController(passengerService)
 	userController := controllers.NewUserController(userService)
 	planeController := controllers.NewPlaneController(planeService)
+	flightController := controllers.NewFlightController(flightService)
 
 	// Setup router
 	router := gin.Default()
 	router.Use(middlewares.Logger())
 	router.Use(middlewares.ErrorHandler())
 
-	// Setup routes
-	passengerRoute := router.Group("/passenger")
-	{
-		passengerRoute.POST("/checkin", passengerController.OnlineCheckInPassenger)
-		passengerRoute.GET("/:id", passengerController.GetPassengerByID)
-	}
-
-	userRoute := router.Group("/user")
-	{
-		userRoute.POST("/register", userController.RegisterUser)
-	}
+	// Register routes
+	RegisterPlaneRoutes(router, planeController)
+	RegisterFlightRoutes(router, flightController)
+	RegisterPassengerRoutes(router, passengerController)
+	RegisterUserRoutes(router, userController)
 
 	planeRoute := router.Group("/plane")
 	{
