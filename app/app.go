@@ -29,6 +29,7 @@ func Run() {
 	var planeRepo ports.PlaneRepository
 	var employeeRepo ports.EmployeeRepository
 	var flightRepo ports.FlightRepository
+	var bankRepo ports.BankRepository
 
 	// Initialize database connection based on configuration
 	switch cfg.Database.Type {
@@ -44,6 +45,8 @@ func Run() {
 		planeRepo = postgres.NewPlaneRepositoryImpl(db)
 		flightRepo = postgres.NewFlightRepositoryImpl(db)
 		employeeRepo = postgres.NewEmployeeRepositoryImpl(db)
+		bankRepo = postgres.NewBankRepositoryImpl(db)
+		middlewares.LogInfo(fmt.Sprintf("%s - Connected to PostgreSQL database", LOG_PREFIX))
 	default:
 		log.Fatalf("%s - Unsupported database type: %s", LOG_PREFIX, cfg.Database.Type)
 	}
@@ -54,6 +57,7 @@ func Run() {
 	planeService := services.NewPlaneService(planeRepo)
 	employeeService := services.NewEmployeeService(employeeRepo)
 	flightService := services.NewFlightService(flightRepo)
+	bankService := services.NewBankService(bankRepo)
 
 	// Initialize controllers
 	passengerController := controllers.NewPassengerController(passengerService)
@@ -61,6 +65,7 @@ func Run() {
 	planeController := controllers.NewPlaneController(planeService)
 	employeeController := controllers.NewEmployeeController(employeeService)
 	flightController := controllers.NewFlightController(flightService)
+	bankController := controllers.NewBankController(bankService)
 
 	// Setup router
 	router := gin.Default()
@@ -73,6 +78,7 @@ func Run() {
 	RegisterPassengerRoutes(router, passengerController)
 	RegisterUserRoutes(router, userController)
 	RegisterEmployeeRoutes(router, employeeController)
+	RegisterBankRoutes(router, bankController)
 
 	// Run the server
 	err = router.Run(fmt.Sprintf(":%s", cfg.ServerPort))
