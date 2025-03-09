@@ -37,16 +37,28 @@ func Run() {
 		db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 			cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.Name))
 		if err != nil {
-			log.Fatalf("%s - Failed to connect to PostgreSQL database: %v", LOG_PREFIX, err)
+			middlewares.LogError(fmt.Sprintf("%s - Failed to connect to PostgreSQL database: %v", LOG_PREFIX, err))
+			return
 		}
 		defer db.Close()
+
+		// Ping the database to test the connection
+		if err := db.Ping(); err != nil {
+			middlewares.LogError(fmt.Sprintf("%s - Failed to ping PostgreSQL database: %v", LOG_PREFIX, err))
+			// Remove comment TODO
+			//return
+		} else {
+			middlewares.LogInfo(fmt.Sprintf("%s - Connected to PostgreSQL database", LOG_PREFIX))
+			// Create tables
+			postgres.CreateTables(db)
+		}
+
 		userRepo = postgres.NewUserRepositoryImpl(db)
 		passengerRepo = postgres.NewPassengerRepositoryImpl(db)
 		planeRepo = postgres.NewPlaneRepositoryImpl(db)
 		flightRepo = postgres.NewFlightRepositoryImpl(db)
 		employeeRepo = postgres.NewEmployeeRepositoryImpl(db)
 		bankRepo = postgres.NewBankRepositoryImpl(db)
-		middlewares.LogInfo(fmt.Sprintf("%s - Connected to PostgreSQL database", LOG_PREFIX))
 	default:
 		log.Fatalf("%s - Unsupported database type: %s", LOG_PREFIX, cfg.Database.Type)
 	}
