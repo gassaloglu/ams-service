@@ -25,7 +25,7 @@ type FirebaseConfig struct {
 }
 
 func LoadConfig() (*Config, error) {
-	viper.SetConfigFile("../config/config.yaml") // Specify the path to the config file
+	viper.SetConfigFile("C:/DEV/db-config/local-config.yaml")
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
