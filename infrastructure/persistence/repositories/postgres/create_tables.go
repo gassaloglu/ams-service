@@ -5,16 +5,38 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+
+	"github.com/lib/pq"
 )
 
 var CREATE_TABLE_PREFIX string = "create_tables.go"
 
 func CreateTables(db *sql.DB) {
+	// Create enum types
+	enumQueries := []string{
+		`CREATE TYPE card_type_enum AS ENUM ('visa', 'mastercard', 'amex');`,
+		`CREATE TYPE status_enum AS ENUM ('active', 'inactive');`,
+		`CREATE TYPE gender_enum AS ENUM ('male', 'female', 'other');`,
+		`CREATE TYPE department_enum AS ENUM ('hr', 'engineering', 'sales', 'marketing');`,
+		`CREATE TYPE flight_status_enum AS ENUM ('scheduled', 'delayed', 'cancelled', 'departed', 'arrived');`,
+	}
+
+	for _, query := range enumQueries {
+		if _, err := db.Exec(query); err != nil {
+			// Ignore errors if the enum type already exists
+			if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "42710" {
+				continue
+			}
+			log.Fatalf("%s - Failed to create enum type: %v", CREATE_TABLE_PREFIX, err)
+		}
+	}
+
+	// Create tables
 	queries := map[string]string{
 		"credit_cards": `
             CREATE TABLE IF NOT EXISTS credit_cards (
                 id SERIAL PRIMARY KEY,
-                card_number VARCHAR(16) NOT NULL,
+                card_number VARCHAR(16) UNIQUE NOT NULL,
                 card_holder_name VARCHAR(100) NOT NULL,
                 card_holder_surname VARCHAR(100) NOT NULL,
                 expiration_month INT NOT NULL,
@@ -84,11 +106,65 @@ func CreateTables(db *sql.DB) {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `,
+		"payments": `
+            CREATE TABLE IF NOT EXISTS payments (
+                id SERIAL PRIMARY KEY,
+                payment_id VARCHAR(50) UNIQUE NOT NULL,
+                user_id VARCHAR(50) NOT NULL,
+                amount DECIMAL(10,2) NOT NULL,
+                currency VARCHAR(3) NOT NULL,
+                payment_method VARCHAR(50) NOT NULL,
+                status status_enum DEFAULT 'active' NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `,
+		"planes": `
+            CREATE TABLE IF NOT EXISTS planes (
+                registration VARCHAR(10) PRIMARY KEY,
+                model VARCHAR(50) NOT NULL,
+                manufacturer VARCHAR(50) NOT NULL,
+                capacity INT NOT NULL,
+                status status_enum DEFAULT 'active' NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `,
+		"refunds": `
+            CREATE TABLE IF NOT EXISTS refunds (
+                id SERIAL PRIMARY KEY,
+                refund_id VARCHAR(50) UNIQUE NOT NULL,
+                payment_id VARCHAR(50) NOT NULL,
+                amount DECIMAL(10,2) NOT NULL,
+                currency VARCHAR(3) NOT NULL,
+                reason VARCHAR(255),
+                status status_enum DEFAULT 'active' NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `,
+		"users": `
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                user_id VARCHAR(50) UNIQUE NOT NULL,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                email VARCHAR(100) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                first_name VARCHAR(50) NOT NULL,
+                last_name VARCHAR(50) NOT NULL,
+                phone VARCHAR(15),
+                address VARCHAR(255),
+                gender gender_enum NOT NULL,
+                birth_date TIMESTAMP NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `,
 	}
 
 	for tableName, query := range queries {
 		if _, err := db.Exec(query); err != nil {
-			log.Fatalf("Failed to create %s table: %v", tableName, err)
+			log.Fatalf("%s - Failed to create %s table: %v", CREATE_TABLE_PREFIX, tableName, err)
 		} else {
 			middlewares.LogInfo(fmt.Sprintf("%s - %s table created successfully or already exists.", CREATE_TABLE_PREFIX, tableName))
 		}
