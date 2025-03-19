@@ -17,7 +17,7 @@ func CreateTables(db *sql.DB) {
 		`CREATE TYPE card_type_enum AS ENUM ('visa', 'mastercard', 'amex');`,
 		`CREATE TYPE status_enum AS ENUM ('active', 'inactive');`,
 		`CREATE TYPE gender_enum AS ENUM ('male', 'female', 'other');`,
-		`CREATE TYPE department_enum AS ENUM ('hr', 'engineering', 'sales', 'marketing');`,
+		`CREATE TYPE role_enum AS ENUM ('hr', 'engineering', 'sales', 'marketing', 'user');`,
 		`CREATE TYPE flight_status_enum AS ENUM ('scheduled', 'delayed', 'cancelled', 'departed', 'arrived');`,
 	}
 
@@ -146,18 +146,20 @@ func CreateTables(db *sql.DB) {
 		"users": `
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
-                user_id VARCHAR(50) UNIQUE NOT NULL,
+                name VARCHAR(50) NOT NULL,
+                surname VARCHAR(50) NOT NULL,
                 username VARCHAR(50) UNIQUE NOT NULL,
                 email VARCHAR(100) UNIQUE NOT NULL,
-                password VARCHAR(255) NOT NULL,
-                first_name VARCHAR(50) NOT NULL,
-                last_name VARCHAR(50) NOT NULL,
+                password_hash TEXT NOT NULL,
+                salt TEXT NOT NULL,
                 phone VARCHAR(15),
-                address VARCHAR(255),
                 gender gender_enum NOT NULL,
                 birth_date TIMESTAMP NOT NULL,
+                role role_enum DEFAULT 'user' NOT NULL,
+                last_login TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_password_change TIMESTAMP
             );
         `,
 	}
