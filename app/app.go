@@ -34,8 +34,8 @@ func Run() {
 	// Initialize database connection based on configuration
 	switch cfg.Database.Type {
 	case "postgres":
-		db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-			cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.Name))
+		db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+			cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.Name, cfg.Database.SSLMode))
 		if err != nil {
 			middlewares.LogError(fmt.Sprintf("%s - Failed to connect to PostgreSQL database: %v", LOG_PREFIX, err))
 			return
@@ -45,11 +45,9 @@ func Run() {
 		// Ping the database to test the connection
 		if err := db.Ping(); err != nil {
 			middlewares.LogError(fmt.Sprintf("%s - Failed to ping PostgreSQL database: %v", LOG_PREFIX, err))
-			// Remove comment TODO
-			//return
+			return
 		} else {
 			middlewares.LogInfo(fmt.Sprintf("%s - Connected to PostgreSQL database", LOG_PREFIX))
-			// Create tables
 			postgres.CreateTables(db)
 		}
 
