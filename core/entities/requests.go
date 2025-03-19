@@ -47,3 +47,8 @@ type GetSpecificFlightRequest struct {
 	FlightNumber      string `json:"flight_number" binding:"required"`
 	DepartureDateTime string `json:"departure_datetime" binding:"required"`
 }
+
+type LoginRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}

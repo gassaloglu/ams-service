@@ -5,6 +5,7 @@ go 1.22
 require (
 	firebase.google.com/go/v4 v4.15.1
 	github.com/gin-gonic/gin v1.10.0
+	github.com/google/go-cmp v0.6.0
 	github.com/lib/pq v1.10.9
 	github.com/spf13/viper v1.19.0
 	go.mongodb.org/mongo-driver v1.17.2
