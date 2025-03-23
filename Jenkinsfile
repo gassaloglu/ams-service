@@ -14,7 +14,7 @@ pipeline {
         stage('Git'){
             steps{
                 // Add github project
-                git branch: 'main', credentialsId: 'test-username', url: 'https://github.com/airline-management-system/ams-service.git'
+                git branch: 'main', credentialsId: 'brkydnc-ssh', url: 'git@github.com:airline-management-system/ams-service.git'
             }
         }
 
