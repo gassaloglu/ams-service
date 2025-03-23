@@ -9,10 +9,6 @@ pipeline {
         buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')
     }
 
-    tools{
-        go '1.23.2'
-            //dockerTool 'latest'
-    }
     stages {
 
         stage('Git'){
