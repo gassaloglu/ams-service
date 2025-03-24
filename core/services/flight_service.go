@@ -10,7 +10,7 @@ var FLIGHT_LOG_PREFIX string = "flight_service.go"
 
 type FlightRepository interface {
 	GetSpecificFlight(request entities.GetSpecificFlightRequest) (entities.Flight, error)
-	GetAllFlights() ([]entities.Flight, error) // Add this line
+	GetAllFlights() ([]entities.Flight, error)
 }
 
 type FlightService struct {
@@ -21,13 +21,17 @@ func NewFlightService(repo FlightRepository) *FlightService {
 	return &FlightService{repo: repo}
 }
 
-func (s *FlightService) GetSpecificFlight(request entities.GetSpecificFlightRequest) (entities.Flight, error) {
-	flight, err := s.repo.GetSpecificFlight(request)
-	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error getting flight by number and departure datetime: %v", FLIGHT_LOG_PREFIX, err))
-		return entities.Flight{}, err
-	}
-	return flight, nil
+func (s *FlightService) GetSpecificFlight(request entities.GetSpecificFlightRequest, userID string, resultChan chan<- entities.Flight, errorChan chan<- error) {
+	go func() {
+		flight, err := s.repo.GetSpecificFlight(request)
+		if err != nil {
+			middlewares.LogError(fmt.Sprintf("%s - Error getting flight by number and departure datetime for user %s: %v", FLIGHT_LOG_PREFIX, userID, err))
+			errorChan <- err
+			return
+		}
+		middlewares.LogInfo(fmt.Sprintf("%s - Successfully retrieved flight by number and departure datetime for user %s", FLIGHT_LOG_PREFIX, userID))
+		resultChan <- flight
+	}()
 }
 
 func (s *FlightService) GetAllFlights() ([]entities.Flight, error) {
