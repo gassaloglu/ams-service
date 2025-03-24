@@ -45,11 +45,11 @@ func (c *UserController) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := c.service.LoginUser(loginRequest.Username, loginRequest.Password)
+	user, token, err := c.service.LoginUser(loginRequest.Username, loginRequest.Password)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "Login successful", "user": user})
+	ctx.JSON(http.StatusOK, gin.H{"message": "Login successful", "token": token, "user": user})
 }
