@@ -44,8 +44,8 @@ type GetPlaneByLocationRequest struct {
 }
 
 type GetSpecificFlightRequest struct {
-	FlightNumber      string `json:"flight_number" binding:"required"`
-	DepartureDateTime string `json:"departure_datetime" binding:"required"`
+	FlightNumber      string `form:"flight_number"`
+	DepartureDateTime string `form:"departure_datetime"`
 }
 
 type LoginRequest struct {

@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const LOG_PREFIX = "config.go"
+var CONFIG_LOG_PREFIX = "config.go"
 
 type Config struct {
 	ServerPort string
@@ -33,12 +33,11 @@ func LoadConfig() (*Config, error) {
 		configFile = "/path/to/db-config/local-config.yaml"
 	}
 
-	middlewares.LogInfo(fmt.Sprintf("%s - Loading configuration from: %s", LOG_PREFIX, configFile))
-	middlewares.LogInfo(fmt.Sprintf("%s - Operating System: %s", LOG_PREFIX, runtime.GOOS))
-	middlewares.LogInfo(fmt.Sprintf("%s - Architecture: %s", LOG_PREFIX, runtime.GOARCH))
+	middlewares.LogInfo(fmt.Sprintf("%s - Loading configuration from: %s", CONFIG_LOG_PREFIX, configFile))
+	middlewares.LogInfo(fmt.Sprintf("%s - Operating System: %s", CONFIG_LOG_PREFIX, runtime.GOOS))
+	middlewares.LogInfo(fmt.Sprintf("%s - Architecture: %s", CONFIG_LOG_PREFIX, runtime.GOARCH))
 
 	viper.SetConfigFile(configFile)
-
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
@@ -48,6 +47,8 @@ func LoadConfig() (*Config, error) {
 	if err := viper.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
+
+	middlewares.LogInfo(fmt.Sprintf("%s - Configuration loaded successfully: %s", CONFIG_LOG_PREFIX, configFile))
 
 	return &cfg, nil
 }
