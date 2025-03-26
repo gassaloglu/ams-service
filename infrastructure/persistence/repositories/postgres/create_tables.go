@@ -63,13 +63,15 @@ func CreateTables(db *sql.DB) {
                 birth_date TIMESTAMP NOT NULL,
                 hire_date TIMESTAMP NOT NULL,
                 position VARCHAR(100) NOT NULL,
-                department department_enum NOT NULL,
+                department role_enum NOT NULL,
                 salary DECIMAL(10,2) NOT NULL,
                 status status_enum DEFAULT 'active' NOT NULL,
                 manager_id INT,
                 emergency_contact VARCHAR(100),
                 emergency_phone VARCHAR(15),
                 profile_image_url VARCHAR(255),
+                password_hash TEXT NOT NULL,
+                salt TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );

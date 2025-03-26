@@ -25,4 +25,6 @@ type Employee struct {
 	ProfileImageURL  string    `json:"profile_image_url" gorm:"size:255"`
 	CreatedAt        time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt        time.Time `json:"updated_at" gorm:"autoUpdateTime"`
+	PasswordHash     string    `json:"password_hash" gorm:"not null"`
+	Salt             string    `json:"-" gorm:"not null"`
 }

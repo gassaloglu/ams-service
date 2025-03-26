@@ -4,6 +4,7 @@ import (
 	"ams-service/application/ports"
 	"ams-service/core/entities"
 	"ams-service/middlewares"
+	"ams-service/utils"
 	"database/sql"
 	"fmt"
 )
@@ -57,4 +58,35 @@ func (r *EmployeeRepositoryImpl) RegisterEmployee(request entities.RegisterEmplo
 		return err
 	}
 	return nil
+}
+
+func (r *EmployeeRepositoryImpl) LoginEmployee(employeeID, password string) (*entities.Employee, error) {
+	middlewares.LogInfo(fmt.Sprintf("%s - Logging in employee: %s", EMPLOYEE_LOG_PREFIX, employeeID))
+
+	query := `SELECT id, employee_id, name, surname, email, password_hash, salt FROM employees WHERE employee_id = $1`
+	row := r.db.QueryRow(query, employeeID)
+
+	var employee entities.Employee
+	err := row.Scan(&employee.ID, &employee.EmployeeID, &employee.Name, &employee.Surname, &employee.Email, &employee.PasswordHash, &employee.Salt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			middlewares.LogError(fmt.Sprintf("%s - Employee not found: %s", EMPLOYEE_LOG_PREFIX, employeeID))
+			return nil, fmt.Errorf("employee not found")
+		}
+		middlewares.LogError(fmt.Sprintf("%s - Error logging in employee: %v", EMPLOYEE_LOG_PREFIX, err))
+		return nil, err
+	}
+
+	isValid, err := utils.VerifyPassword(password, employee.PasswordHash, employee.Salt)
+	if err != nil {
+		middlewares.LogError(fmt.Sprintf("%s - Error verifying password for employee: %s, error: %v", EMPLOYEE_LOG_PREFIX, employeeID, err))
+		return nil, err
+	}
+	if !isValid {
+		middlewares.LogError(fmt.Sprintf("%s - Invalid password for employee: %s", EMPLOYEE_LOG_PREFIX, employeeID))
+		return nil, fmt.Errorf("invalid password")
+	}
+
+	middlewares.LogInfo(fmt.Sprintf("%s - Successfully logged in employee: %s", EMPLOYEE_LOG_PREFIX, employeeID))
+	return &employee, nil
 }
