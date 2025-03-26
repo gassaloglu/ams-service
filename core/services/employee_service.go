@@ -4,6 +4,7 @@ import (
 	"ams-service/config"
 	"ams-service/core/entities"
 	"ams-service/middlewares"
+	"ams-service/utils"
 	"context"
 	"fmt"
 	"time"
@@ -37,11 +38,27 @@ func (s *EmployeeService) GetEmployeeByID(request entities.GetEmployeeByIdReques
 }
 
 func (s *EmployeeService) RegisterEmployee(request entities.RegisterEmployeeRequest) error {
-	err := s.repo.RegisterEmployee(request)
+	salt, err := utils.GenerateSalt(16)
+	if err != nil {
+		middlewares.LogError(fmt.Sprintf("%s - Error generating salt: %v", EMPLOYEE_LOG_PREFIX, err))
+		return err
+	}
+
+	hashedPassword, err := utils.HashPassword(request.Employee.PasswordHash, salt)
+	if err != nil {
+		middlewares.LogError(fmt.Sprintf("%s - Error hashing password: %v", EMPLOYEE_LOG_PREFIX, err))
+		return err
+	}
+
+	request.Employee.PasswordHash = hashedPassword
+	request.Employee.Salt = salt
+
+	err = s.repo.RegisterEmployee(request)
 	if err != nil {
 		middlewares.LogError(fmt.Sprintf("%s - Error registering employee: %v", EMPLOYEE_LOG_PREFIX, err))
 		return err
 	}
+	middlewares.LogInfo(fmt.Sprintf("%s - Successfully registered employee: %v", EMPLOYEE_LOG_PREFIX, request.Employee))
 	return nil
 }
 

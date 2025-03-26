@@ -51,15 +51,18 @@ func (r *EmployeeRepositoryImpl) RegisterEmployee(request entities.RegisterEmplo
 		return err
 	}
 
-	query = `INSERT INTO employees (employee_id, name, surname, email, phone, address, gender, birth_date, hire_date, position, department, salary, status, manager_id, emergency_contact, emergency_phone, profile_image_url, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`
-	_, err = r.db.Exec(query, request.Employee.EmployeeID, request.Employee.Name, request.Employee.Surname, request.Employee.Email, request.Employee.Phone, request.Employee.Address, request.Employee.Gender, request.Employee.BirthDate, request.Employee.HireDate, request.Employee.Position, request.Employee.Department, request.Employee.Salary, request.Employee.Status, request.Employee.ManagerID, request.Employee.EmergencyContact, request.Employee.EmergencyPhone, request.Employee.ProfileImageURL, request.Employee.CreatedAt, request.Employee.UpdatedAt)
+	// Log the gender value before insertion
+	middlewares.LogInfo(fmt.Sprintf("%s - Employee details: %+v", EMPLOYEE_LOG_PREFIX, request.Employee))
+
+	query = `INSERT INTO employees (employee_id, name, surname, email, phone, address, gender, birth_date, hire_date, position, department, salary, status, manager_id, emergency_contact, emergency_phone, profile_image_url, password_hash, salt, created_at, updated_at) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`
+	_, err = r.db.Exec(query, request.Employee.EmployeeID, request.Employee.Name, request.Employee.Surname, request.Employee.Email, request.Employee.Phone, request.Employee.Address, request.Employee.Gender, request.Employee.BirthDate, request.Employee.HireDate, request.Employee.Position, request.Employee.Department, request.Employee.Salary, request.Employee.Status, request.Employee.ManagerID, request.Employee.EmergencyContact, request.Employee.EmergencyPhone, request.Employee.ProfileImageURL, request.Employee.PasswordHash, request.Employee.Salt, request.Employee.CreatedAt, request.Employee.UpdatedAt)
 	if err != nil {
 		middlewares.LogError(fmt.Sprintf("%s - Error registering employee: %v", EMPLOYEE_LOG_PREFIX, err))
 		return err
 	}
 	return nil
 }
-
 func (r *EmployeeRepositoryImpl) LoginEmployee(employeeID, password string) (*entities.Employee, error) {
 	middlewares.LogInfo(fmt.Sprintf("%s - Logging in employee: %s", EMPLOYEE_LOG_PREFIX, employeeID))
 
