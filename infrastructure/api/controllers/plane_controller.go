@@ -70,14 +70,14 @@ func (c *PlaneController) GetPlaneByRegistration(ctx *gin.Context) {
 	var request entities.GetPlaneByRegistrationRequest
 	if err := ctx.ShouldBindQuery(&request); err != nil {
 		middlewares.LogError(PLANE_LOG_PREFIX + " - Error binding query: " + err.Error())
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "TODO: Error binding query"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Error binding query"})
 		return
 	}
 
 	plane, err := c.service.GetPlaneByRegistration(request)
 	if err != nil {
 		middlewares.LogError(PLANE_LOG_PREFIX + " - Error getting plane by registration: " + err.Error())
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "TODO: Error getting plane by registration"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error getting plane by registration"})
 		return
 	}
 	ctx.JSON(http.StatusOK, plane)

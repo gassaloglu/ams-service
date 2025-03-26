@@ -94,9 +94,9 @@ func (r *PlaneRepositoryImpl) SetPlaneStatus(request entities.SetPlaneStatusRequ
 }
 
 func (r *PlaneRepositoryImpl) GetPlaneByRegistration(request entities.GetPlaneByRegistrationRequest) (entities.Plane, error) {
-	middlewares.LogInfo(fmt.Sprintf("%s - Querying plane by registrtion: %s", PLANE_LOG_PREFIX, request.PlaneRegistration))
+	middlewares.LogInfo(fmt.Sprintf("%s - Querying plane by registration: %s", PLANE_LOG_PREFIX, request.PlaneRegistration))
 
-	query := "SELECT * FROM planes WHERE regstration = $1"
+	query := "SELECT * FROM planes WHERE plane_registration = $1"
 	row := r.db.QueryRow(query, request.PlaneRegistration)
 
 	var plane entities.Plane
