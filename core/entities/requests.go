@@ -32,7 +32,7 @@ type SetPlaneStatusRequest struct {
 }
 
 type GetPlaneByRegistrationRequest struct {
-	PlaneRegistration string `json:"plane_registration" binding:"required"`
+	PlaneRegistration string `form:"registration_code" binding:"required"`
 }
 
 type GetPlaneByFlightNumberRequest struct {
