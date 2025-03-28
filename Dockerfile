@@ -1,9 +1,9 @@
-FROM golang:1.23-alpine
+FROM golang:1.23-alpine AS builder
 WORKDIR /app
 COPY . .
 ENV CGO_ENABLED=0
-RUN go build -ldflags '-w -s -extldflags "-static"' -a -o application main.go
+RUN go build -ldflags '-w -s -extldflags "-static"' -o build/main -a cmd/main.go
 
 FROM scratch
-COPY --from=0 /app/application ./
-CMD ["./application"]
+COPY --from=builder /app/build ./build
+ENTRYPOINT [ "./build/main" ]
