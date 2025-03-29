@@ -2,8 +2,9 @@ package config
 
 import (
 	"ams-service/middlewares"
+	"errors"
 	"fmt"
-	"runtime"
+	"os"
 
 	"github.com/spf13/viper"
 )
@@ -26,16 +27,13 @@ type DatabaseConfig struct {
 }
 
 func LoadConfig() (*Config, error) {
-	var configFile string
-	if runtime.GOOS == "windows" {
-		configFile = "C:/DEV/db-config/local-config.yaml"
-	} else {
-		configFile = "/path/to/db-config/local-config.yaml"
+	configFile, found := os.LookupEnv("CONFIG_FILE")
+
+	if !found {
+		return nil, errors.New("could not read environment variable CONFIG_FILE")
 	}
 
 	middlewares.LogInfo(fmt.Sprintf("%s - Loading configuration from: %s", CONFIG_LOG_PREFIX, configFile))
-	middlewares.LogInfo(fmt.Sprintf("%s - Operating System: %s", CONFIG_LOG_PREFIX, runtime.GOOS))
-	middlewares.LogInfo(fmt.Sprintf("%s - Architecture: %s", CONFIG_LOG_PREFIX, runtime.GOARCH))
 
 	viper.SetConfigFile(configFile)
 
