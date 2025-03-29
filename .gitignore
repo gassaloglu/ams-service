@@ -24,7 +24,13 @@ go.work.sum
 # env file
 .env
 
+# Application configuration
 config.yaml
+secret.yaml
+
+# Editor config
 .idea
-.DS_Store
 .vscode
+
+# Misc
+.DS_Store

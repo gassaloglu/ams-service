@@ -11,6 +11,8 @@ require (
 	go.mongodb.org/mongo-driver v1.17.2
 )
 
+require github.com/joho/godotenv v1.5.1 // indirect
+
 require (
 	cloud.google.com/go/compute v1.24.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
