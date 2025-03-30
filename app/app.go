@@ -105,7 +105,12 @@ func Run() {
 	RegisterBankRoutes(router, bankController)
 
 	// Run the server
+	log.Info().
+		Str("port", cfg.ServerPort).
+		Msg("Starting REST server")
+
 	err = router.Run(fmt.Sprintf(":%s", cfg.ServerPort))
+
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to start server")
 	}
