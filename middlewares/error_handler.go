@@ -1,10 +1,10 @@
 package middlewares
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 func ErrorHandler() gin.HandlerFunc {
@@ -13,7 +13,7 @@ func ErrorHandler() gin.HandlerFunc {
 
 		if len(c.Errors) > 0 {
 			for _, e := range c.Errors {
-				log.Printf("Error: %v", e.Err)
+				log.Error().Err(e.Err).Msg("Request error")
 			}
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		}

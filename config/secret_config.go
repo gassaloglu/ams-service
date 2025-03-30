@@ -1,15 +1,12 @@
 package config
 
 import (
-	"ams-service/middlewares"
 	"errors"
-	"fmt"
 	"os"
 
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
-
-var SECRET_CONFIG_LOG_PREFIX = "secret_config.go"
 
 type SecretConfig struct {
 	JWTSecretKey string `mapstructure:"jwt_secret_key"`
@@ -27,18 +24,19 @@ func LoadSecretConfig() (*SecretConfig, error) {
 	viper.SetConfigFile(secretConfigFile)
 
 	if err := viper.ReadInConfig(); err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error reading secret config file: %v", SECRET_CONFIG_LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Error reading secret config file")
 		return nil, err
 	}
 
 	var secretConfig SecretConfig
 	if err := viper.Unmarshal(&secretConfig); err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error unmarshalling secret config file: %v", SECRET_CONFIG_LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Error unmarshalling secret config file")
 		return nil, err
 	}
 
 	JWTSecretKey = secretConfig.JWTSecretKey
-	middlewares.LogInfo(fmt.Sprintf("%s - JWT Secret Key loaded successfully", SECRET_CONFIG_LOG_PREFIX))
+
+	log.Info().Msg("JWT Secret Key loaded successfully")
 
 	return &secretConfig, nil
 }

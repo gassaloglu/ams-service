@@ -2,8 +2,8 @@ package services
 
 import (
 	"ams-service/core/entities"
-	"ams-service/middlewares"
-	"fmt"
+
+	"github.com/rs/zerolog/log"
 )
 
 var PLANE_LOG_PREFIX string = "plane_service.go"
@@ -28,59 +28,59 @@ func NewPlaneService(repo PlaneRepository) *PlaneService {
 func (s *PlaneService) GetAllPlanes() ([]entities.Plane, error) {
 	planes, err := s.repo.GetAllPlanes()
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error getting all planes: %v", PLANE_LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Error getting all planes")
 		return nil, err
 	}
-	middlewares.LogInfo(fmt.Sprintf("%s - Successfully retrieved all planes", PLANE_LOG_PREFIX))
+	log.Info().Msg("Successfully retrieved all planes")
 	return planes, nil
 }
 
 func (s *PlaneService) GetPlaneByRegistration(request entities.GetPlaneByRegistrationRequest) (entities.Plane, error) {
 	plane, err := s.repo.GetPlaneByRegistration(request)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error getting plane by registration %s: %v", PLANE_LOG_PREFIX, request.PlaneRegistration, err))
+		log.Error().Err(err).Str("registration", request.PlaneRegistration).Msg("Error getting plane by registration")
 		return entities.Plane{}, err
 	}
-	middlewares.LogInfo(fmt.Sprintf("%s - Successfully retrieved plane by registration %s", PLANE_LOG_PREFIX, request.PlaneRegistration))
+	log.Info().Str("registration", request.PlaneRegistration).Msg("Successfully retrieved plane by registration")
 	return plane, nil
 }
 
 func (s *PlaneService) GetPlaneByFlightNumber(request entities.GetPlaneByFlightNumberRequest) (entities.Plane, error) {
 	plane, err := s.repo.GetPlaneByFlightNumber(request)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error getting plane by flight number %s: %v", PLANE_LOG_PREFIX, request.FlightNumber, err))
+		log.Error().Err(err).Str("flight_number", request.FlightNumber).Msg("Error getting plane by flight number")
 		return entities.Plane{}, err
 	}
-	middlewares.LogInfo(fmt.Sprintf("%s - Successfully retrieved plane by flight number %s", PLANE_LOG_PREFIX, request.FlightNumber))
+	log.Info().Str("flight_number", request.FlightNumber).Msg("Successfully retrieved plane by flight number")
 	return plane, nil
 }
 
 func (s *PlaneService) GetPlaneByLocation(request entities.GetPlaneByLocationRequest) ([]entities.Plane, error) {
 	planes, err := s.repo.GetPlaneByLocation(request)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error getting planes by location %s: %v", PLANE_LOG_PREFIX, request.Location, err))
+		log.Error().Err(err).Str("location", request.Location).Msg("Error getting planes by location")
 		return nil, err
 	}
-	middlewares.LogInfo(fmt.Sprintf("%s - Successfully retrieved planes by location %s", PLANE_LOG_PREFIX, request.Location))
+	log.Info().Str("location", request.Location).Msg("Successfully retrieved planes by location")
 	return planes, nil
 }
 
 func (s *PlaneService) AddPlane(request entities.AddPlaneRequest) error {
 	err := s.repo.AddPlane(request)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error adding plane: %v", PLANE_LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Error adding plane")
 		return err
 	}
-	middlewares.LogInfo(fmt.Sprintf("%s - Successfully added plane", PLANE_LOG_PREFIX))
+	log.Info().Msg("Successfully added plane")
 	return nil
 }
 
 func (s *PlaneService) SetPlaneStatus(request entities.SetPlaneStatusRequest) error {
 	err := s.repo.SetPlaneStatus(request)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error setting plane status: %v", PLANE_LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Error setting plane status")
 		return err
 	}
-	middlewares.LogInfo(fmt.Sprintf("%s - Successfully set plane status", PLANE_LOG_PREFIX))
+	log.Info().Msg("Successfully set plane status")
 	return nil
 }

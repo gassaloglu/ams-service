@@ -9,26 +9,32 @@ import (
 	"ams-service/middlewares"
 	"database/sql"
 	"fmt"
-	"log"
+	"os"
+	"path/filepath"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq" // Import the PostgreSQL driver
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 var LOG_PREFIX string = "app.go"
 
 func Run() {
+	initLogger()
+
 	// Load default environment variables from .env file first
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("%s - Failed to load .env file: %v", LOG_PREFIX, err)
+		log.Fatal().Err(err).Msg("Failed to load .env file")
 	}
 
 	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatalf("%s - Failed to load configuration: %v", LOG_PREFIX, err)
+		log.Fatal().Err(err).Msg("Failed to load configuration")
 	}
 
 	var userRepo ports.UserRepository
@@ -43,19 +49,21 @@ func Run() {
 	case "postgres":
 		db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 			cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.Name, cfg.Database.SSLMode))
+
 		if err != nil {
-			middlewares.LogError(fmt.Sprintf("%s - Failed to connect to PostgreSQL database: %v", LOG_PREFIX, err))
+			log.Error().Err(err).Msg("Failed to connect to PostgreSQL database")
 			return
 		}
+
 		defer db.Close()
 
 		// Ping the database to test the connection
 		if err := db.Ping(); err != nil {
-			middlewares.LogError(fmt.Sprintf("%s - Failed to ping PostgreSQL database: %v", LOG_PREFIX, err))
+			log.Error().Err(err).Msg("Failed to ping PostgreSQL database")
 			return
 		}
 
-		middlewares.LogInfo(fmt.Sprintf("%s - Connected to PostgreSQL database", LOG_PREFIX))
+		log.Info().Msg("Connected to PostgreSQL database")
 
 		userRepo = postgres.NewUserRepositoryImpl(db)
 		passengerRepo = postgres.NewPassengerRepositoryImpl(db)
@@ -64,7 +72,7 @@ func Run() {
 		employeeRepo = postgres.NewEmployeeRepositoryImpl(db)
 		bankRepo = postgres.NewBankRepositoryImpl(db)
 	default:
-		log.Fatalf("%s - Unsupported database type: %s", LOG_PREFIX, cfg.Database.Type)
+		log.Fatal().Msgf("Unsupported database type %s", cfg.Database.Type)
 	}
 
 	// Initialize services
@@ -84,6 +92,7 @@ func Run() {
 	bankController := controllers.NewBankController(bankService)
 
 	// Setup router
+	gin.SetMode("release")
 	router := gin.Default()
 	router.Use(middlewares.Logger())
 	router.Use(middlewares.ErrorHandler())
@@ -97,8 +106,25 @@ func Run() {
 	RegisterBankRoutes(router, bankController)
 
 	// Run the server
+	log.Info().
+		Str("port", cfg.ServerPort).
+		Msg("Starting REST server")
+
 	err = router.Run(fmt.Sprintf(":%s", cfg.ServerPort))
+
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Failed to start server: %v", LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Failed to start server")
 	}
+}
+
+func initLogger() {
+	zerolog.CallerMarshalFunc = func(pc uintptr, file string, line int) string {
+		return filepath.Base(file) + ":" + strconv.Itoa(line)
+	}
+
+	log.Logger = log.
+		Output(zerolog.ConsoleWriter{Out: os.Stderr}).
+		With().
+		Caller().
+		Logger()
 }

@@ -4,7 +4,6 @@ import (
 	"ams-service/config"
 	"ams-service/core/entities"
 	"ams-service/core/services"
-	"ams-service/middlewares"
 	"fmt"
 	"net/http"
 	"strings"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 var FLIGHT_LOG_PREFIX string = "flight_controller.go"
@@ -27,14 +27,14 @@ func NewFlightController(service *services.FlightService) *FlightController {
 func (c *FlightController) GetSpecificFlight(ctx *gin.Context) {
 	var request entities.GetSpecificFlightRequest
 	if err := ctx.ShouldBindQuery(&request); err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error binding query: %v", FLIGHT_LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Error binding query")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Error binding query"})
 		return
 	}
 
 	userID, err := extractUserIDFromToken(ctx)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error extracting user ID from token: %v", FLIGHT_LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Error extracting user ID from token")
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
@@ -48,7 +48,7 @@ func (c *FlightController) GetSpecificFlight(ctx *gin.Context) {
 	case flight := <-resultChan:
 		ctx.JSON(http.StatusOK, flight)
 	case err := <-errorChan:
-		middlewares.LogError(fmt.Sprintf("%s - Error getting specific flight: %v", FLIGHT_LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Error getting specific flight")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error getting specific flight"})
 	case <-time.After(10 * time.Second):
 		ctx.JSON(http.StatusGatewayTimeout, gin.H{"error": "Request timed out"})
@@ -58,7 +58,7 @@ func (c *FlightController) GetSpecificFlight(ctx *gin.Context) {
 func (c *FlightController) GetAllFlights(ctx *gin.Context) {
 	flights, err := c.service.GetAllFlights()
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error getting all flights: %v", FLIGHT_LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Error getting all flights")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "TODO: Error getting all flights"})
 		return
 	}

@@ -3,12 +3,11 @@ package services
 import (
 	"ams-service/config"
 	"ams-service/core/entities"
-	"ams-service/middlewares"
 	"ams-service/utils"
-	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/rs/zerolog/log"
 )
 
 var USER_LOG_PREFIX string = "user_service.go"
@@ -30,13 +29,13 @@ func NewUserService(repo UserRepository) *UserService {
 func (s *UserService) RegisterUser(user entities.User) error {
 	salt, err := utils.GenerateSalt(16)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error generating salt: %v", USER_LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Error generating salt")
 		return err
 	}
 
 	hashedPassword, err := utils.HashPassword(user.PasswordHash, salt)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error hashing password: %v", USER_LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Error hashing password")
 		return err
 	}
 
@@ -45,27 +44,27 @@ func (s *UserService) RegisterUser(user entities.User) error {
 
 	err = s.repo.RegisterUser(user)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error registering user: %v", USER_LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Error registering user")
 		return err
 	}
-	middlewares.LogInfo(fmt.Sprintf("%s - Successfully registered user: %v", USER_LOG_PREFIX, user))
+	log.Info().Str("username", user.Username).Msg("Successfully registered user")
 	return nil
 }
 
 func (s *UserService) LoginUser(username, password string) (*entities.User, string, error) {
 	user, err := s.repo.LoginUser(username, password)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error logging in user: %v", USER_LOG_PREFIX, err))
+		log.Error().Err(err).Str("username", username).Msg("Error logging in user")
 		return nil, "", err
 	}
 
 	token, err := generateJWTToken(user)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error generating JWT token: %v", USER_LOG_PREFIX, err))
+		log.Error().Err(err).Str("username", username).Msg("Error generating JWT token")
 		return nil, "", err
 	}
 
-	middlewares.LogInfo(fmt.Sprintf("%s - Successfully logged in user: %s", USER_LOG_PREFIX, username))
+	log.Info().Str("username", username).Msg("Successfully logged in user")
 	return user, token, nil
 }
 

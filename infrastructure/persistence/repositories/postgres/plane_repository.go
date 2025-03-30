@@ -3,9 +3,9 @@ package postgres
 import (
 	"ams-service/application/ports"
 	"ams-service/core/entities"
-	"ams-service/middlewares"
 	"database/sql"
-	"fmt"
+
+	"github.com/rs/zerolog/log"
 )
 
 var PLANE_LOG_PREFIX string = "passenger_repository.go"
@@ -19,7 +19,7 @@ func NewPlaneRepositoryImpl(db *sql.DB) ports.PlaneRepository {
 }
 
 func (r *PlaneRepositoryImpl) GetAllPlanes() ([]entities.Plane, error) {
-	middlewares.LogInfo("Getting all planes")
+	log.Info().Msg("Getting all planes")
 
 	query := "SELECT * FROM planes"
 	rows, err := r.db.Query(query)
@@ -50,10 +50,10 @@ func (r *PlaneRepositoryImpl) AddPlane(request entities.AddPlaneRequest) error {
 	existedPlane, err := r.GetPlaneByRegistration(getByRegistrationInput)
 	var plane entities.Plane
 	if existedPlane != plane {
-		middlewares.LogInfo(fmt.Sprintf("%s - Plane with the registration: %s is already existed", PLANE_LOG_PREFIX, request.Plane.PlaneRegistration))
+		log.Info().Str("registration", request.Plane.PlaneRegistration).Msg("Plane with the registration already exists")
 		return err
 	}
-	middlewares.LogInfo(fmt.Sprintf("%s - Adding new plane with registration: %s", PLANE_LOG_PREFIX, request.Plane.PlaneRegistration))
+	log.Info().Str("registration", request.Plane.PlaneRegistration).Msg("Adding new plane")
 
 	query := `
 			INSERT INTO planes (
@@ -75,26 +75,26 @@ func (r *PlaneRepositoryImpl) AddPlane(request entities.AddPlaneRequest) error {
 		request.Plane.IsAvailable,
 	)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error adding plane: %v", PLANE_LOG_PREFIX, err))
+		log.Error().Err(err).Str("registration", request.Plane.PlaneRegistration).Msg("Error adding plane")
 		return err
 	}
 	return nil
 }
 
 func (r *PlaneRepositoryImpl) SetPlaneStatus(request entities.SetPlaneStatusRequest) error {
-	middlewares.LogInfo(fmt.Sprintf("%s - Setting plane status for registration: %s", PLANE_LOG_PREFIX, request.PlaneRegistration))
+	log.Info().Str("registration", request.PlaneRegistration).Bool("is_available", request.IsAvailable).Msg("Setting plane status")
 
 	query := "UPDATE planes SET is_available = $1 WHERE plane_registration = $2"
 	_, err := r.db.Exec(query, request.IsAvailable, request.PlaneRegistration)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error updating plane status: %v", PLANE_LOG_PREFIX, err))
+		log.Error().Err(err).Str("registration", request.PlaneRegistration).Msg("Error updating plane status")
 		return err
 	}
 	return nil
 }
 
 func (r *PlaneRepositoryImpl) GetPlaneByRegistration(request entities.GetPlaneByRegistrationRequest) (entities.Plane, error) {
-	middlewares.LogInfo(fmt.Sprintf("%s - Querying plane by registration: %s", PLANE_LOG_PREFIX, request.PlaneRegistration))
+	log.Info().Str("registration", request.PlaneRegistration).Msg("Querying plane by registration")
 
 	query := "SELECT * FROM planes WHERE plane_registration = $1"
 	row := r.db.QueryRow(query, request.PlaneRegistration)
@@ -103,14 +103,14 @@ func (r *PlaneRepositoryImpl) GetPlaneByRegistration(request entities.GetPlaneBy
 
 	err := row.Scan(&plane.PlaneRegistration, &plane.PlaneType, &plane.Location, &plane.TotalPassengers, &plane.MaxPassengers, &plane.EconomyPassengers, &plane.BusinessPassengers, &plane.FirstClassPassengers, &plane.FlightNumber, &plane.IsAvailable)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error querying plane by registration: %v", PLANE_LOG_PREFIX, err))
+		log.Error().Err(err).Str("registration", request.PlaneRegistration).Msg("Error querying plane by registration")
 		return entities.Plane{}, err
 	}
 	return plane, nil
 }
 
 func (r *PlaneRepositoryImpl) GetPlaneByFlightNumber(request entities.GetPlaneByFlightNumberRequest) (entities.Plane, error) {
-	middlewares.LogInfo(fmt.Sprintf("%s - Querying plane by flight number: %s", PLANE_LOG_PREFIX, request.FlightNumber))
+	log.Info().Str("flight_number", request.FlightNumber).Msg("Querying plane by flight number")
 
 	query := "SELECT * FROM planes WHERE flight_number = $1"
 	row := r.db.QueryRow(query, request.FlightNumber)
@@ -119,19 +119,19 @@ func (r *PlaneRepositoryImpl) GetPlaneByFlightNumber(request entities.GetPlaneBy
 
 	err := row.Scan(&plane.PlaneRegistration, &plane.PlaneType, &plane.Location, &plane.TotalPassengers, &plane.MaxPassengers, &plane.EconomyPassengers, &plane.BusinessPassengers, &plane.FirstClassPassengers, &plane.FlightNumber, &plane.IsAvailable)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error querying plane by flight number: %v", PLANE_LOG_PREFIX, err))
+		log.Error().Err(err).Str("flight_number", request.FlightNumber).Msg("Error querying plane by flight number")
 		return entities.Plane{}, err
 	}
 	return plane, nil
 }
 
 func (r *PlaneRepositoryImpl) GetPlaneByLocation(request entities.GetPlaneByLocationRequest) ([]entities.Plane, error) {
-	middlewares.LogInfo(fmt.Sprintf("%s - Querying planes by location: %s", PLANE_LOG_PREFIX, request.Location))
+	log.Info().Str("location", request.Location).Msg("Querying planes by location")
 
 	query := "SELECT * FROM planes WHERE location = $1"
 	rows, err := r.db.Query(query, request.Location)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error querying planes by location: %v", PLANE_LOG_PREFIX, err))
+		log.Error().Err(err).Str("location", request.Location).Msg("Error querying planes by location")
 		return nil, err
 	}
 	defer rows.Close()
@@ -141,13 +141,13 @@ func (r *PlaneRepositoryImpl) GetPlaneByLocation(request entities.GetPlaneByLoca
 		var plane entities.Plane
 		err := rows.Scan(&plane.PlaneRegistration, &plane.PlaneType, &plane.Location, &plane.TotalPassengers, &plane.MaxPassengers, &plane.EconomyPassengers, &plane.BusinessPassengers, &plane.FirstClassPassengers, &plane.FlightNumber, &plane.IsAvailable)
 		if err != nil {
-			middlewares.LogError(fmt.Sprintf("%s - Error scanning plane row: %v", PLANE_LOG_PREFIX, err))
+			log.Error().Err(err).Msg("Error scanning plane row")
 			return planes, err
 		}
 		planes = append(planes, plane)
 	}
 	if err = rows.Err(); err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error iterating over plane rows: %v", PLANE_LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Error iterating over plane rows")
 		return planes, err
 	}
 	return planes, nil

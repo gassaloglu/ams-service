@@ -2,8 +2,8 @@ package services
 
 import (
 	"ams-service/core/entities"
-	"ams-service/middlewares"
-	"fmt"
+
+	"github.com/rs/zerolog/log"
 )
 
 var FLIGHT_LOG_PREFIX string = "flight_service.go"
@@ -25,11 +25,11 @@ func (s *FlightService) GetSpecificFlight(request entities.GetSpecificFlightRequ
 	go func() {
 		flight, err := s.repo.GetSpecificFlight(request)
 		if err != nil {
-			middlewares.LogError(fmt.Sprintf("%s - Error getting flight by number and departure datetime for user %s: %v", FLIGHT_LOG_PREFIX, userID, err))
+			log.Error().Err(err).Str("user_id", userID).Msg("Error getting flight by number and departure datetime")
 			errorChan <- err
 			return
 		}
-		middlewares.LogInfo(fmt.Sprintf("%s - Successfully retrieved flight by number and departure datetime for user %s", FLIGHT_LOG_PREFIX, userID))
+		log.Info().Str("user_id", userID).Msg("Successfully retrieved flight by number and departure datetime")
 		resultChan <- flight
 	}()
 }
@@ -37,9 +37,9 @@ func (s *FlightService) GetSpecificFlight(request entities.GetSpecificFlightRequ
 func (s *FlightService) GetAllFlights() ([]entities.Flight, error) {
 	flights, err := s.repo.GetAllFlights()
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error getting all flights: %v", FLIGHT_LOG_PREFIX, err))
+		log.Error().Err(err).Msg("Error getting all flights")
 		return nil, err
 	}
-	middlewares.LogInfo(fmt.Sprintf("%s - Successfully retrieved all flights", FLIGHT_LOG_PREFIX))
+	log.Info().Msg("Successfully retrieved all flights")
 	return flights, nil
 }

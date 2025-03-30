@@ -3,10 +3,11 @@ package postgres
 import (
 	"ams-service/application/ports"
 	"ams-service/core/entities"
-	"ams-service/middlewares"
 	"ams-service/utils"
 	"database/sql"
 	"fmt"
+
+	"github.com/rs/zerolog/log"
 )
 
 var USER_LOG_PREFIX string = "user_repository.go"
@@ -20,7 +21,11 @@ func NewUserRepositoryImpl(db *sql.DB) ports.UserRepository {
 }
 
 func (r *UserRepositoryImpl) RegisterUser(user entities.User) error {
-	middlewares.LogInfo(fmt.Sprintf("%s - Registering user: %v", USER_LOG_PREFIX, user))
+	log.Info().
+		Str("name", user.Name).
+		Str("username", user.Username).
+		Str("email", user.Email).
+		Msg("Registering user")
 
 	query := `
         INSERT INTO users (name, surname, username, email, password_hash, salt, phone, gender, birth_date, role, last_login, created_at, updated_at, last_password_change)
@@ -29,15 +34,20 @@ func (r *UserRepositoryImpl) RegisterUser(user entities.User) error {
 
 	_, err := r.db.Exec(query, user.Name, user.Surname, user.Username, user.Email, user.PasswordHash, user.Salt, user.Phone, user.Gender, user.BirthDate, user.Role, user.LastLogin, user.CreatedAt, user.UpdatedAt, user.LastPasswordChange)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error registering user: %v", USER_LOG_PREFIX, err))
+		log.Error().
+			Err(err).
+			Str("username", user.Username).
+			Msg("Error registering user")
 		return err
 	}
-	middlewares.LogInfo(fmt.Sprintf("%s - Successfully registered user: %v", USER_LOG_PREFIX, user))
+	log.Info().
+		Str("username", user.Username).
+		Msg("Successfully registered user")
 	return nil
 }
 
 func (r *UserRepositoryImpl) LoginUser(username, password string) (*entities.User, error) {
-	middlewares.LogInfo(fmt.Sprintf("%s - Logging in user: %s", USER_LOG_PREFIX, username))
+	log.Info().Str("username", username).Msg("Logging in user")
 
 	query := `SELECT id, name, surname, username, email, password_hash, salt FROM users WHERE username = $1`
 	row := r.db.QueryRow(query, username)
@@ -46,23 +56,23 @@ func (r *UserRepositoryImpl) LoginUser(username, password string) (*entities.Use
 	err := row.Scan(&user.ID, &user.Name, &user.Surname, &user.Username, &user.Email, &user.PasswordHash, &user.Salt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			middlewares.LogError(fmt.Sprintf("%s - User not found: %s", USER_LOG_PREFIX, username))
+			log.Error().Str("username", username).Msg("User not found")
 			return nil, fmt.Errorf("user not found")
 		}
-		middlewares.LogError(fmt.Sprintf("%s - Error logging in user: %v", USER_LOG_PREFIX, err))
+		log.Error().Err(err).Str("username", username).Msg("Error logging in user")
 		return nil, err
 	}
 
 	isValid, err := utils.VerifyPassword(password, user.PasswordHash, user.Salt)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error verifying password for user: %s, error: %v", USER_LOG_PREFIX, username, err))
+		log.Error().Err(err).Str("username", username).Msg("Error verifying password")
 		return nil, err
 	}
 	if !isValid {
-		middlewares.LogError(fmt.Sprintf("%s - Invalid password for user: %s", USER_LOG_PREFIX, username))
+		log.Error().Str("username", username).Msg("Invalid password")
 		return nil, fmt.Errorf("invalid password")
 	}
 
-	middlewares.LogInfo(fmt.Sprintf("%s - Successfully logged in user: %s", USER_LOG_PREFIX, username))
+	log.Info().Str("username", username).Msg("Successfully logged in user")
 	return &user, nil
 }
