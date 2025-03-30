@@ -34,3 +34,6 @@ secret.yaml
 
 # Misc
 .DS_Store
+
+# Container data
+deployments/dev/data
