@@ -1,11 +1,18 @@
 module ams-service
 
-go 1.22
+go 1.23.0
+
+toolchain go1.23.5
 
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/lib/pq v1.10.9
 	github.com/spf13/viper v1.19.0
+)
+
+require (
+	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/rs/zerolog v1.34.0 // indirect
 )
 
 require (
@@ -51,7 +58,7 @@ require (
 	golang.org/x/crypto v0.29.0 // direct
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/net v0.31.0 // indirect
-	golang.org/x/sys v0.27.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.20.0 // indirect
 	google.golang.org/protobuf v1.35.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

@@ -1,11 +1,10 @@
 package config
 
 import (
-	"ams-service/middlewares"
 	"errors"
-	"fmt"
 	"os"
 
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -33,7 +32,7 @@ func LoadConfig() (*Config, error) {
 		return nil, errors.New("could not read environment variable CONFIG_FILE")
 	}
 
-	middlewares.LogInfo(fmt.Sprintf("%s - Loading configuration from: %s", CONFIG_LOG_PREFIX, configFile))
+	log.Info().Str("file", configFile).Msg("Loading configuration")
 
 	viper.SetConfigFile(configFile)
 
@@ -46,7 +45,7 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	middlewares.LogInfo(fmt.Sprintf("%s - Configuration loaded successfully: %s", CONFIG_LOG_PREFIX, configFile))
+	log.Info().Str("file", configFile).Msg("Configuration loaded successfully")
 
 	return &cfg, nil
 }

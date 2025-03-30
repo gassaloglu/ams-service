@@ -3,11 +3,10 @@ package controllers
 import (
 	"ams-service/core/entities"
 	"ams-service/core/services"
-	"ams-service/middlewares"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 const USER_LOG_PREFIX string = "user_controller.go"
@@ -29,11 +28,11 @@ func (c *UserController) RegisterUser(ctx *gin.Context) {
 
 	err := c.service.RegisterUser(user)
 	if err != nil {
-		middlewares.LogError(fmt.Sprintf("%s - Error registering user: %v", USER_LOG_PREFIX, err))
+		log.Error().Err(err).Str("username", user.Username).Msg("Error registering user")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "TODO: Registration failed"})
 		return
 	}
-	middlewares.LogInfo(fmt.Sprintf("%s - Successfully registered user: %v", USER_LOG_PREFIX, user))
+	log.Info().Str("username", user.Username).Msg("Successfully registered user")
 	ctx.JSON(http.StatusOK, gin.H{"message": "TODO: Registration successful"})
 }
 

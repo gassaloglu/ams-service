@@ -3,10 +3,10 @@ package controllers
 import (
 	"ams-service/core/entities"
 	"ams-service/core/services"
-	"ams-service/middlewares"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 var PLANE_LOG_PREFIX string = "plane_controller.go"
@@ -24,9 +24,8 @@ func NewPlaneController(service *services.PlaneService) *PlaneController {
 func (c *PlaneController) GetAllPlanes(ctx *gin.Context) {
 	planes, err := c.service.GetAllPlanes()
 	if err != nil {
-		middlewares.LogError(PLANE_LOG_PREFIX + " - Error getting all planes: " + err.Error())
+		log.Error().Err(err).Msg("Error getting all planes")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "TODO: Error getting all planes"})
-
 		return
 	}
 	ctx.JSON(http.StatusOK, planes)
@@ -35,14 +34,14 @@ func (c *PlaneController) GetAllPlanes(ctx *gin.Context) {
 func (c *PlaneController) AddPlane(ctx *gin.Context) {
 	var request entities.AddPlaneRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
-		middlewares.LogError(PLANE_LOG_PREFIX + " - Error binding JSON: " + err.Error())
+		log.Error().Err(err).Msg("Error binding JSON")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "TODO: Error binding JSON"})
 		return
 	}
 
 	err := c.service.AddPlane(request)
 	if err != nil {
-		middlewares.LogError(PLANE_LOG_PREFIX + " - Error adding plane: " + err.Error())
+		log.Error().Err(err).Msg("Error adding plane")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "TODO: Error adding plane"})
 		return
 	}
@@ -52,14 +51,14 @@ func (c *PlaneController) AddPlane(ctx *gin.Context) {
 func (c *PlaneController) SetPlaneStatus(ctx *gin.Context) {
 	var request entities.SetPlaneStatusRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
-		middlewares.LogError(PLANE_LOG_PREFIX + " - Error binding JSON: " + err.Error())
+		log.Error().Err(err).Msg("Error binding JSON")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "TODO: Error binding JSON"})
 		return
 	}
 
 	err := c.service.SetPlaneStatus(request)
 	if err != nil {
-		middlewares.LogError(PLANE_LOG_PREFIX + " - Error setting plane status: " + err.Error())
+		log.Error().Err(err).Msg("Error setting plane status")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "TODO: Error setting plane status"})
 		return
 	}
@@ -69,14 +68,14 @@ func (c *PlaneController) SetPlaneStatus(ctx *gin.Context) {
 func (c *PlaneController) GetPlaneByRegistration(ctx *gin.Context) {
 	var request entities.GetPlaneByRegistrationRequest
 	if err := ctx.ShouldBindQuery(&request); err != nil {
-		middlewares.LogError(PLANE_LOG_PREFIX + " - Error binding query: " + err.Error())
+		log.Error().Err(err).Msg("Error binding query")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Error binding query"})
 		return
 	}
 
 	plane, err := c.service.GetPlaneByRegistration(request)
 	if err != nil {
-		middlewares.LogError(PLANE_LOG_PREFIX + " - Error getting plane by registration: " + err.Error())
+		log.Error().Err(err).Str("registration", request.PlaneRegistration).Msg("Error getting plane by registration")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error getting plane by registration"})
 		return
 	}
@@ -86,14 +85,14 @@ func (c *PlaneController) GetPlaneByRegistration(ctx *gin.Context) {
 func (c *PlaneController) GetPlaneByFlightNumber(ctx *gin.Context) {
 	var request entities.GetPlaneByFlightNumberRequest
 	if err := ctx.ShouldBindQuery(&request); err != nil {
-		middlewares.LogError(PLANE_LOG_PREFIX + " - Error binding query: " + err.Error())
+		log.Error().Err(err).Msg("Error binding query")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "TODO: Error binding query"})
 		return
 	}
 
 	plane, err := c.service.GetPlaneByFlightNumber(request)
 	if err != nil {
-		middlewares.LogError(PLANE_LOG_PREFIX + " - Error getting plane by flight number: " + err.Error())
+		log.Error().Err(err).Str("flight_number", request.FlightNumber).Msg("Error getting plane by flight number")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "TODO: Error getting plane by flight number"})
 		return
 	}
@@ -103,14 +102,14 @@ func (c *PlaneController) GetPlaneByFlightNumber(ctx *gin.Context) {
 func (c *PlaneController) GetPlaneByLocation(ctx *gin.Context) {
 	var request entities.GetPlaneByLocationRequest
 	if err := ctx.ShouldBindQuery(&request); err != nil {
-		middlewares.LogError(PLANE_LOG_PREFIX + " - Error binding query: " + err.Error())
+		log.Error().Err(err).Msg("Error binding query")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "TODO: Error binding query"})
 		return
 	}
 
 	planes, err := c.service.GetPlaneByLocation(request)
 	if err != nil {
-		middlewares.LogError(PLANE_LOG_PREFIX + " - Error getting planes by location: " + err.Error())
+		log.Error().Err(err).Str("location", request.Location).Msg("Error getting planes by location")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "TODO: Error getting planes by location"})
 		return
 	}
