@@ -15,6 +15,6 @@ func RegisterEmployeeRoutes(router *gin.Engine, employeeController *controllers.
 		employeeRoute.POST("/register", employeeController.RegisterEmployee)
 		employeeRoute.POST("/login", employeeController.LoginEmployee)
 		employeeRoute.Use(middlewares.AuthMiddleware(config.JWTSecretKey))
-
+		//t
 	}
 }
