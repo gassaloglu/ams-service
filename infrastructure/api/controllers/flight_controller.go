@@ -55,7 +55,7 @@ func (c *FlightController) GetSpecificFlight(ctx *gin.Context) {
 
 func (c *FlightController) GetAllFlights(ctx *gin.Context) {
 	// Extract employee ID from the token
-	employeeID, err := utils.ExtractIDFromToken(ctx, "employee_id")
+	employeeID, err := utils.ExtractEmployeeIDFromToken(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Error extracting employee ID from token")
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
