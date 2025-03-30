@@ -92,6 +92,7 @@ func Run() {
 	bankController := controllers.NewBankController(bankService)
 
 	// Setup router
+	gin.SetMode("release")
 	router := gin.Default()
 	router.Use(middlewares.Logger())
 	router.Use(middlewares.ErrorHandler())
