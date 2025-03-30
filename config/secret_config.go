@@ -2,8 +2,9 @@ package config
 
 import (
 	"ams-service/middlewares"
+	"errors"
 	"fmt"
-	"runtime"
+	"os"
 
 	"github.com/spf13/viper"
 )
@@ -16,27 +17,28 @@ type SecretConfig struct {
 
 var JWTSecretKey string
 
-func init() {
-	var secretConfigFile string
-	if runtime.GOOS == "windows" {
-		secretConfigFile = "C:/DEV/secret-config/secret-config.yaml"
-	} else {
-		secretConfigFile = "/path/to/db-config/local-config.yaml"
+func LoadSecretConfig() (*SecretConfig, error) {
+	secretConfigFile, found := os.LookupEnv("SECRET_FILE")
+
+	if !found {
+		return nil, errors.New("could not read environment variable SECRET_FILE")
 	}
 
 	viper.SetConfigFile(secretConfigFile)
 
 	if err := viper.ReadInConfig(); err != nil {
 		middlewares.LogError(fmt.Sprintf("%s - Error reading secret config file: %v", SECRET_CONFIG_LOG_PREFIX, err))
-		return
+		return nil, err
 	}
 
 	var secretConfig SecretConfig
 	if err := viper.Unmarshal(&secretConfig); err != nil {
 		middlewares.LogError(fmt.Sprintf("%s - Error unmarshalling secret config file: %v", SECRET_CONFIG_LOG_PREFIX, err))
-		return
+		return nil, err
 	}
 
 	JWTSecretKey = secretConfig.JWTSecretKey
 	middlewares.LogInfo(fmt.Sprintf("%s - JWT Secret Key loaded successfully", SECRET_CONFIG_LOG_PREFIX))
+
+	return &secretConfig, nil
 }

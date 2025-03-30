@@ -12,12 +12,19 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq" // Import the PostgreSQL driver
 )
 
 var LOG_PREFIX string = "app.go"
 
 func Run() {
+	// Load default environment variables from .env file first
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("%s - Failed to load .env file: %v", LOG_PREFIX, err)
+	}
+
 	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
@@ -46,10 +53,9 @@ func Run() {
 		if err := db.Ping(); err != nil {
 			middlewares.LogError(fmt.Sprintf("%s - Failed to ping PostgreSQL database: %v", LOG_PREFIX, err))
 			return
-		} else {
-			middlewares.LogInfo(fmt.Sprintf("%s - Connected to PostgreSQL database", LOG_PREFIX))
-			postgres.CreateTables(db)
 		}
+
+		middlewares.LogInfo(fmt.Sprintf("%s - Connected to PostgreSQL database", LOG_PREFIX))
 
 		userRepo = postgres.NewUserRepositoryImpl(db)
 		passengerRepo = postgres.NewPassengerRepositoryImpl(db)
