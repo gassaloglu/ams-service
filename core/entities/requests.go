@@ -58,3 +58,8 @@ type GetSpecificFlightsRequest struct {
 	DestinationAirport string `form:"destination_airport" binding:"required,len=3,alpha"`
 	DepartureDateTime  string `form:"departure_datetime" binding:"required,datetime=2006-01-02"`
 }
+
+type CancelFlightRequest struct {
+	FlightNumber string `json:"flight_number" binding:"required"`
+	FlightDate   string `json:"flight_date" binding:"required,datetime=2006-01-02"`
+}

@@ -11,6 +11,8 @@ func RegisterFlightRoutes(router *gin.Engine, flightController *controllers.Flig
 	{
 		flightRoute.GET("/", flightController.GetSpecificFlight)
 		flightRoute.GET("/all", flightController.GetAllFlights)
-		flightRoute.GET("/all/:query", flightController.GetAllSpecificFlights)
+		flightRoute.GET("/all/", flightController.GetAllSpecificFlights)
+		flightRoute.GET("/active", flightController.GetAllActiveFlights)
+		flightRoute.PATCH("/cancel", flightController.CancelFlight)
 	}
 }
