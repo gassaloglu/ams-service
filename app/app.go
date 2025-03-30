@@ -53,10 +53,9 @@ func Run() {
 		if err := db.Ping(); err != nil {
 			middlewares.LogError(fmt.Sprintf("%s - Failed to ping PostgreSQL database: %v", LOG_PREFIX, err))
 			return
-		} else {
-			middlewares.LogInfo(fmt.Sprintf("%s - Connected to PostgreSQL database", LOG_PREFIX))
-			postgres.CreateTables(db)
 		}
+
+		middlewares.LogInfo(fmt.Sprintf("%s - Connected to PostgreSQL database", LOG_PREFIX))
 
 		userRepo = postgres.NewUserRepositoryImpl(db)
 		passengerRepo = postgres.NewPassengerRepositoryImpl(db)
