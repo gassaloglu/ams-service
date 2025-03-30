@@ -28,13 +28,13 @@ func Run() {
 	// Load default environment variables from .env file first
 	err := godotenv.Load()
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to load .env file")
+		log.Fatal().Err(err).Msg("Failed to load .env file")
 	}
 
 	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to load configuration")
+		log.Fatal().Err(err).Msg("Failed to load configuration")
 	}
 
 	var userRepo ports.UserRepository
