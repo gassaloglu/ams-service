@@ -9,7 +9,7 @@ import (
 func RegisterFlightRoutes(router *gin.Engine, flightController *controllers.FlightController) {
 	flightRoute := router.Group("/flight")
 	{
-		flightRoute.GET("/specific", flightController.GetSpecificFlight)
+		flightRoute.GET("/", flightController.GetSpecificFlight) // Updated route
 		flightRoute.GET("/all", flightController.GetAllFlights)
 	}
 }
