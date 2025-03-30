@@ -4,6 +4,7 @@ import (
 	"ams-service/core/entities"
 	"ams-service/core/services"
 	"ams-service/middlewares"
+	"context"
 	"net/http"
 	"strconv"
 
@@ -54,4 +55,23 @@ func (c *EmployeeController) RegisterEmployee(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "Employee registered successfully"})
+}
+
+func (c *EmployeeController) LoginEmployee(ctx *gin.Context) {
+	var loginRequest entities.LoginRequest
+
+	if err := ctx.ShouldBindJSON(&loginRequest); err != nil {
+		middlewares.LogError(EMPLOYEE_LOG_PREFIX + " - Error binding JSON: " + err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	employee, token, err := c.service.LoginEmployee(context.Background(), loginRequest.Username, loginRequest.Password)
+	if err != nil {
+		middlewares.LogError(EMPLOYEE_LOG_PREFIX + " - Error logging in employee: " + err.Error())
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid employee ID or password"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Login successful", "token": token, "employee": employee})
 }
