@@ -7,13 +7,11 @@ toolchain go1.23.5
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/lib/pq v1.10.9
+	github.com/rs/zerolog v1.34.0
 	github.com/spf13/viper v1.19.0
 )
 
-require (
-	github.com/mattn/go-colorable v0.1.14 // indirect
-	github.com/rs/zerolog v1.34.0 // indirect
-)
+require github.com/mattn/go-colorable v0.1.14 // indirect
 
 require (
 	github.com/google/go-cmp v0.6.0 // indirect
