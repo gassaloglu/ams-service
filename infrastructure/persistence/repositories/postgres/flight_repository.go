@@ -58,3 +58,85 @@ func (r *FlightRepositoryImpl) GetAllFlights() ([]entities.Flight, error) {
 
 	return flights, nil
 }
+
+func (r *FlightRepositoryImpl) GetAllSpecificFlights(request entities.GetSpecificFlightsRequest) ([]entities.Flight, error) {
+	log.Info().
+		Str("departure_airport", request.DepartureAirport).
+		Str("destination_airport", request.DestinationAirport).
+		Str("departure_datetime", request.DepartureDateTime).
+		Msg("Querying specific flights")
+
+	query := `SELECT flight_number, departure_airport, destination_airport, departure_datetime, arrival_datetime, departure_gate_number, destination_gate_number, plane_registration, status, price 
+              FROM flights 
+              WHERE departure_airport = $1 AND destination_airport = $2 AND departure_datetime::date = $3`
+
+	rows, err := r.db.Query(query, request.DepartureAirport, request.DestinationAirport, request.DepartureDateTime)
+	if err != nil {
+		log.Error().Err(err).Msg("Error querying specific flights")
+		return nil, err
+	}
+	defer rows.Close()
+
+	var flights []entities.Flight
+	for rows.Next() {
+		var flight entities.Flight
+		err := rows.Scan(&flight.FlightNumber, &flight.DepartureAirport, &flight.DestinationAirport, &flight.DepartureDateTime, &flight.ArrivalDateTime, &flight.DepartureGateNumber, &flight.DestinationGateNumber, &flight.PlaneRegistration, &flight.Status, &flight.Price)
+		if err != nil {
+			log.Error().Err(err).Msg("Error scanning flight row")
+			return nil, err
+		}
+		flights = append(flights, flight)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Error().Err(err).Msg("Error iterating over flight rows")
+		return nil, err
+	}
+
+	return flights, nil
+}
+
+func (r *FlightRepositoryImpl) GetAllActiveFlights() ([]entities.Flight, error) {
+	log.Info().Msg("Querying all active flights")
+	//TODO: update flight staus
+	query := `SELECT flight_number, departure_airport, destination_airport, departure_datetime, arrival_datetime, departure_gate_number, destination_gate_number, plane_registration, status, price 
+              FROM flights 
+              WHERE status = 'scheduled'`
+
+	rows, err := r.db.Query(query)
+	if err != nil {
+		log.Error().Err(err).Msg("Error querying all active flights")
+		return nil, err
+	}
+	defer rows.Close()
+
+	var flights []entities.Flight
+	for rows.Next() {
+		var flight entities.Flight
+		err := rows.Scan(&flight.FlightNumber, &flight.DepartureAirport, &flight.DestinationAirport, &flight.DepartureDateTime, &flight.ArrivalDateTime, &flight.DepartureGateNumber, &flight.DestinationGateNumber, &flight.PlaneRegistration, &flight.Status, &flight.Price)
+		if err != nil {
+			log.Error().Err(err).Msg("Error scanning flight row")
+			return nil, err
+		}
+		flights = append(flights, flight)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Error().Err(err).Msg("Error iterating over flight rows")
+		return nil, err
+	}
+
+	return flights, nil
+}
+
+func (r *FlightRepositoryImpl) CancelFlight(request entities.CancelFlightRequest) error {
+	log.Info().Str("flight_number", request.FlightNumber).Str("flight_date", request.FlightDate).Msg("Canceling flight")
+
+	query := `UPDATE flights SET status = 'cancelled' WHERE flight_number = $1 AND departure_datetime::date = $2`
+	_, err := r.db.Exec(query, request.FlightNumber, request.FlightDate)
+	if err != nil {
+		log.Error().Err(err).Str("flight_number", request.FlightNumber).Str("flight_date", request.FlightDate).Msg("Error canceling flight")
+		return err
+	}
+	return nil
+}

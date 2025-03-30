@@ -11,6 +11,9 @@ var FLIGHT_LOG_PREFIX string = "flight_service.go"
 type FlightRepository interface {
 	GetSpecificFlight(request entities.GetSpecificFlightRequest) (entities.Flight, error)
 	GetAllFlights() ([]entities.Flight, error)
+	GetAllSpecificFlights(request entities.GetSpecificFlightsRequest) ([]entities.Flight, error)
+	GetAllActiveFlights() ([]entities.Flight, error)
+	CancelFlight(request entities.CancelFlightRequest) error
 }
 
 type FlightService struct {
@@ -42,4 +45,34 @@ func (s *FlightService) GetAllFlights() ([]entities.Flight, error) {
 	}
 	log.Info().Msg("Successfully retrieved all flights")
 	return flights, nil
+}
+
+func (s *FlightService) GetAllSpecificFlights(request entities.GetSpecificFlightsRequest) ([]entities.Flight, error) {
+	flights, err := s.repo.GetAllSpecificFlights(request)
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting specific flights")
+		return nil, err
+	}
+	log.Info().Msg("Successfully retrieved specific flights")
+	return flights, nil
+}
+
+func (s *FlightService) GetAllActiveFlights() ([]entities.Flight, error) {
+	flights, err := s.repo.GetAllActiveFlights()
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting all active flights")
+		return nil, err
+	}
+	log.Info().Msg("Successfully retrieved all active flights")
+	return flights, nil
+}
+
+func (s *FlightService) CancelFlight(request entities.CancelFlightRequest) error {
+	err := s.repo.CancelFlight(request)
+	if err != nil {
+		log.Error().Err(err).Str("flight_number", request.FlightNumber).Msg("Error canceling flight")
+		return err
+	}
+	log.Info().Str("flight_number", request.FlightNumber).Msg("Successfully canceled flight")
+	return nil
 }
