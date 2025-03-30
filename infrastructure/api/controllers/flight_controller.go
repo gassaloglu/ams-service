@@ -91,3 +91,50 @@ func (c *FlightController) GetAllFlights(ctx *gin.Context) {
 		ctx.JSON(http.StatusGatewayTimeout, gin.H{"error": "Request timed out"})
 	}
 }
+
+func (c *FlightController) GetAllSpecificFlights(ctx *gin.Context) {
+	// Extract user ID from the token
+	userID, err := utils.ExtractIDFromToken(ctx, "user_id")
+	if err != nil {
+		log.Error().Err(err).Msg("Error extracting user ID from token")
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Log the user ID for auditing purposes
+	log.Info().Str("user_id", userID).Msg("User attempting to view specific flights")
+
+	// Bind query parameters
+	var request entities.GetSpecificFlightsRequest
+	if err := ctx.ShouldBindQuery(&request); err != nil {
+		log.Error().Err(err).Msg("Error binding query parameters")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query parameters"})
+		return
+	}
+
+	// Create channels for asynchronous processing
+	resultChan := make(chan []entities.Flight)
+	errorChan := make(chan error)
+
+	// Run the service call in a Goroutine
+	go func() {
+		flights, err := c.service.GetAllSpecificFlights(request)
+		if err != nil {
+			errorChan <- err
+			return
+		}
+		resultChan <- flights
+	}()
+
+	// Wait for the result or error
+	select {
+	case flights := <-resultChan:
+		ctx.JSON(http.StatusOK, flights)
+	case err := <-errorChan:
+		log.Error().Err(err).Msg("Error getting specific flights")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error getting specific flights"})
+	case <-time.After(10 * time.Second): // Timeout after 10 seconds
+		log.Error().Msg("Request timed out")
+		ctx.JSON(http.StatusGatewayTimeout, gin.H{"error": "Request timed out"})
+	}
+}

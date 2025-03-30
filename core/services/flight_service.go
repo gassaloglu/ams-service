@@ -11,6 +11,7 @@ var FLIGHT_LOG_PREFIX string = "flight_service.go"
 type FlightRepository interface {
 	GetSpecificFlight(request entities.GetSpecificFlightRequest) (entities.Flight, error)
 	GetAllFlights() ([]entities.Flight, error)
+	GetAllSpecificFlights(request entities.GetSpecificFlightsRequest) ([]entities.Flight, error)
 }
 
 type FlightService struct {
@@ -41,5 +42,15 @@ func (s *FlightService) GetAllFlights() ([]entities.Flight, error) {
 		return nil, err
 	}
 	log.Info().Msg("Successfully retrieved all flights")
+	return flights, nil
+}
+
+func (s *FlightService) GetAllSpecificFlights(request entities.GetSpecificFlightsRequest) ([]entities.Flight, error) {
+	flights, err := s.repo.GetAllSpecificFlights(request)
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting specific flights")
+		return nil, err
+	}
+	log.Info().Msg("Successfully retrieved specific flights")
 	return flights, nil
 }

@@ -52,3 +52,9 @@ type LoginRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
+
+type GetSpecificFlightsRequest struct {
+	DepartureAirport   string `form:"departure_airport" binding:"required,len=3,alpha"`
+	DestinationAirport string `form:"destination_airport" binding:"required,len=3,alpha"`
+	DepartureDateTime  string `form:"departure_datetime" binding:"required,datetime=2006-01-02"`
+}
