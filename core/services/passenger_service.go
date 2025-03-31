@@ -12,6 +12,9 @@ type PassengerRepository interface {
 	GetPassengerByID(request entities.GetPassengerByIdRequest) (entities.Passenger, error)
 	GetPassengerByPNR(request entities.GetPassengerByPnrRequest) (entities.Passenger, error)
 	OnlineCheckInPassenger(request entities.OnlineCheckInRequest) error
+	GetPassengersBySpecificFlight(request entities.GetPassengersBySpecificFlightRequest) ([]entities.Passenger, error)
+	CreatePassenger(request entities.CreatePassengerRequest) error
+	GetAllPassengers() ([]entities.Passenger, error)
 }
 
 type PassengerService struct {
@@ -50,4 +53,34 @@ func (s *PassengerService) OnlineCheckInPassenger(request entities.OnlineCheckIn
 	}
 	log.Info().Str("pnr", request.PNR).Str("surname", request.Surname).Msg("Successfully checked in passenger")
 	return nil
+}
+
+func (s *PassengerService) GetPassengersBySpecificFlight(request entities.GetPassengersBySpecificFlightRequest) ([]entities.Passenger, error) {
+	passengers, err := s.repo.GetPassengersBySpecificFlight(request)
+	if err != nil {
+		log.Error().Err(err).Str("flight_number", request.FlightNumber).Msg("Error getting passengers by specific flight")
+		return nil, err
+	}
+	log.Info().Str("flight_number", request.FlightNumber).Msg("Successfully retrieved passengers by specific flight")
+	return passengers, nil
+}
+
+func (s *PassengerService) CreatePassenger(request entities.CreatePassengerRequest) error {
+	err := s.repo.CreatePassenger(request)
+	if err != nil {
+		log.Error().Err(err).Str("national_id", request.NationalId).Msg("Error creating passenger")
+		return err
+	}
+	log.Info().Str("national_id", request.NationalId).Msg("Successfully created passenger")
+	return nil
+}
+
+func (s *PassengerService) GetAllPassengers() ([]entities.Passenger, error) {
+	passengers, err := s.repo.GetAllPassengers()
+	if err != nil {
+		log.Error().Err(err).Msg("Error retrieving all passengers")
+		return nil, err
+	}
+	log.Info().Msg("Successfully retrieved all passengers")
+	return passengers, nil
 }
