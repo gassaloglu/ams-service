@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var TOKEN_EXPIRY_DURATION time.Duration = time.Hour * 72
+var TokenExpiryDuration = time.Hour * 72
 
 type UserRepository interface {
 	RegisterUser(user entities.User) error
@@ -70,7 +70,7 @@ func (s *UserService) LoginUser(username, password string) (*entities.User, stri
 func generateJWTToken(user *entities.User) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": user.ID,
-		"exp":     time.Now().Add(TOKEN_EXPIRY_DURATION).Unix(),
+		"exp":     time.Now().Add(TokenExpiryDuration).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

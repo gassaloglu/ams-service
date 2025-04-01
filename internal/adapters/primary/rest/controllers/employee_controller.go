@@ -11,8 +11,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var EMPLOYEE_LOG_PREFIX string = "employee_controller.go"
-
 type EmployeeController struct {
 	service *services.EmployeeService
 }

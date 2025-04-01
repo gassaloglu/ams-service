@@ -11,7 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var EMPLOYEE_TOKEN_EXPIRY_DURATION time.Duration = time.Hour * 72
+var EmployeeTokenExpiryDuration = time.Hour * 72
 
 type EmployeeRepository interface {
 	GetEmployeeByID(request entities.GetEmployeeByIdRequest) (entities.Employee, error)
@@ -80,7 +80,7 @@ func (s *EmployeeService) LoginEmployee(ctx context.Context, employeeID, passwor
 func generateEmployeeJWTToken(employee *entities.Employee) (string, error) {
 	claims := jwt.MapClaims{
 		"employee_id": employee.ID,
-		"exp":         time.Now().Add(EMPLOYEE_TOKEN_EXPIRY_DURATION).Unix(),
+		"exp":         time.Now().Add(EmployeeTokenExpiryDuration).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
