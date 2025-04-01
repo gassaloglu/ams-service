@@ -11,8 +11,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var FLIGHT_LOG_PREFIX string = "flight_controller.go"
-
 type FlightController struct {
 	service *services.FlightService
 }

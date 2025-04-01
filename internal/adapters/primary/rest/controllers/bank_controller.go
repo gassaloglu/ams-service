@@ -9,8 +9,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var BANK_LOG_PREFIX string = "bank_controller.go"
-
 type BankController struct {
 	service *services.BankService
 }

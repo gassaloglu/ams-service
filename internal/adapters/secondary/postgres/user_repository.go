@@ -10,8 +10,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var USER_LOG_PREFIX string = "user_repository.go"
-
 type UserRepositoryImpl struct {
 	db *sql.DB
 }

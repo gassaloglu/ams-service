@@ -8,8 +8,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var PLANE_LOG_PREFIX string = "passenger_repository.go"
-
 type PlaneRepositoryImpl struct {
 	db *sql.DB
 }

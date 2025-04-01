@@ -8,8 +8,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var BANK_LOG_PREFIX string = "bank_repository.go"
-
 type BankRepositoryImpl struct {
 	db *sql.DB
 }

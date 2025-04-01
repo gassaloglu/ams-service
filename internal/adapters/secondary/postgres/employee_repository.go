@@ -10,8 +10,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var EMPLOYEE_LOG_PREFIX string = "employee_repository.go"
-
 type EmployeeRepositoryImpl struct {
 	db *sql.DB
 }

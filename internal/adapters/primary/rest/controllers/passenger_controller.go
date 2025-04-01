@@ -9,8 +9,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var PASSENGER_LOG_PREFIX string = "passenger_controller.go"
-
 type PassengerController struct {
 	service *services.PassengerService
 }

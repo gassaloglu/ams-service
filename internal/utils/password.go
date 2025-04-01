@@ -10,8 +10,6 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 )
 
-const PASSWORD_LOG_PREFIX string = "password.go"
-
 // GenerateSalt generates a new salt for password hashing
 func GenerateSalt(size int) (string, error) {
 	salt := make([]byte, size)

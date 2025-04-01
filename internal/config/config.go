@@ -8,8 +8,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var CONFIG_LOG_PREFIX = "config.go"
-
 type Config struct {
 	ServerPort string
 	Database   DatabaseConfig

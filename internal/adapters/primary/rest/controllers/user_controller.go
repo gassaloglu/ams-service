@@ -9,8 +9,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const USER_LOG_PREFIX string = "user_controller.go"
-
 type UserController struct {
 	service *services.UserService
 }

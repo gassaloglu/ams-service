@@ -9,8 +9,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var PLANE_LOG_PREFIX string = "plane_controller.go"
-
 /* ADAPTER - HANDLER */
 
 type PlaneController struct {
