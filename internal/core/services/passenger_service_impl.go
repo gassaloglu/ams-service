@@ -2,24 +2,17 @@ package services
 
 import (
 	"ams-service/internal/core/entities"
+	"ams-service/internal/ports/primary"
+	"ams-service/internal/ports/secondary"
 
 	"github.com/rs/zerolog/log"
 )
 
-type PassengerRepository interface {
-	GetPassengerByID(request entities.GetPassengerByIdRequest) (entities.Passenger, error)
-	GetPassengerByPNR(request entities.GetPassengerByPnrRequest) (entities.Passenger, error)
-	OnlineCheckInPassenger(request entities.OnlineCheckInRequest) error
-	GetPassengersBySpecificFlight(request entities.GetPassengersBySpecificFlightRequest) ([]entities.Passenger, error)
-	CreatePassenger(request entities.CreatePassengerRequest) error
-	GetAllPassengers() ([]entities.Passenger, error)
-}
-
 type PassengerService struct {
-	repo PassengerRepository
+	repo secondary.PassengerRepository
 }
 
-func NewPassengerService(repo PassengerRepository) *PassengerService {
+func NewPassengerService(repo secondary.PassengerRepository) primary.PassengerService {
 	return &PassengerService{repo: repo}
 }
 

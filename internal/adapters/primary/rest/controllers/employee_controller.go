@@ -2,8 +2,7 @@ package controllers
 
 import (
 	"ams-service/internal/core/entities"
-	"ams-service/internal/core/services"
-	"context"
+	"ams-service/internal/ports/primary"
 	"net/http"
 	"strconv"
 
@@ -12,10 +11,10 @@ import (
 )
 
 type EmployeeController struct {
-	service *services.EmployeeService
+	service primary.EmployeeService
 }
 
-func NewEmployeeController(service *services.EmployeeService) *EmployeeController {
+func NewEmployeeController(service primary.EmployeeService) *EmployeeController {
 	return &EmployeeController{service: service}
 }
 
@@ -64,7 +63,7 @@ func (c *EmployeeController) LoginEmployee(ctx *gin.Context) {
 		return
 	}
 
-	employee, token, err := c.service.LoginEmployee(context.Background(), loginRequest.Username, loginRequest.Password)
+	employee, token, err := c.service.LoginEmployee(loginRequest.Username, loginRequest.Password)
 	if err != nil {
 		log.Error().Err(err).Msg("Error logging in employee")
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid employee ID or password"})

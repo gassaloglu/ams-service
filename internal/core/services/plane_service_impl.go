@@ -2,24 +2,17 @@ package services
 
 import (
 	"ams-service/internal/core/entities"
+	"ams-service/internal/ports/primary"
+	"ams-service/internal/ports/secondary"
 
 	"github.com/rs/zerolog/log"
 )
 
-type PlaneRepository interface {
-	GetAllPlanes() ([]entities.Plane, error)
-	GetPlaneByRegistration(request entities.GetPlaneByRegistrationRequest) (entities.Plane, error)
-	GetPlaneByFlightNumber(request entities.GetPlaneByFlightNumberRequest) (entities.Plane, error)
-	GetPlaneByLocation(request entities.GetPlaneByLocationRequest) ([]entities.Plane, error)
-	AddPlane(request entities.AddPlaneRequest) error
-	SetPlaneStatus(request entities.SetPlaneStatusRequest) error
-}
-
 type PlaneService struct {
-	repo PlaneRepository
+	repo secondary.PlaneRepository
 }
 
-func NewPlaneService(repo PlaneRepository) *PlaneService {
+func NewPlaneService(repo secondary.PlaneRepository) primary.PlaneService {
 	return &PlaneService{repo: repo}
 }
 

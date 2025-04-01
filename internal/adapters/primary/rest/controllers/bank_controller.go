@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"ams-service/internal/core/entities"
-	"ams-service/internal/core/services"
+	"ams-service/internal/ports/primary"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,10 +10,10 @@ import (
 )
 
 type BankController struct {
-	service *services.BankService
+	service primary.BankService
 }
 
-func NewBankController(service *services.BankService) *BankController {
+func NewBankController(service primary.BankService) *BankController {
 	return &BankController{service: service}
 }
 

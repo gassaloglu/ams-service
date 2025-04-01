@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"ams-service/internal/core/entities"
-	"ams-service/internal/core/services"
+	"ams-service/internal/ports/primary"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,10 +10,10 @@ import (
 )
 
 type UserController struct {
-	service *services.UserService
+	service primary.UserService
 }
 
-func NewUserController(service *services.UserService) *UserController {
+func NewUserController(service primary.UserService) *UserController {
 	return &UserController{service: service}
 }
 

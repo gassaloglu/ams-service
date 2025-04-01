@@ -3,6 +3,8 @@ package services
 import (
 	"ams-service/internal/config"
 	"ams-service/internal/core/entities"
+	"ams-service/internal/ports/primary"
+	"ams-service/internal/ports/secondary"
 	"ams-service/internal/utils"
 	"time"
 
@@ -12,16 +14,11 @@ import (
 
 var TokenExpiryDuration = time.Hour * 72
 
-type UserRepository interface {
-	RegisterUser(user entities.User) error
-	LoginUser(username, password string) (*entities.User, error)
-}
-
 type UserService struct {
-	repo UserRepository
+	repo secondary.UserRepository
 }
 
-func NewUserService(repo UserRepository) *UserService {
+func NewUserService(repo secondary.UserRepository) primary.UserService {
 	return &UserService{repo: repo}
 }
 
