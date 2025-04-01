@@ -1,5 +1,5 @@
 -- Database initialization script
--- Created on March 30, 2025
+-- Created on March 31, 2025
 
 -- Create enum types
 DO $$
@@ -8,31 +8,27 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'card_type_enum') THEN
         CREATE TYPE card_type_enum AS ENUM ('visa', 'mastercard', 'amex');
     END IF;
-    
+
     -- Create status_enum if it doesn't exist
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'status_enum') THEN
         CREATE TYPE status_enum AS ENUM ('active', 'inactive');
     END IF;
-    
+
     -- Create gender_enum if it doesn't exist
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'gender_enum') THEN
-        CREATE TYPE gender_enum AS ENUM ('male', 'female', 'other');
+        CREATE TYPE gender_enum AS ENUM ('male', 'female');
     END IF;
-    
+
     -- Create role_enum if it doesn't exist
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'role_enum') THEN
-        CREATE TYPE role_enum AS ENUM ('hr', 'engineering', 'sales', 'marketing', 'user');
+        CREATE TYPE role_enum AS ENUM ('hr', 'admin', 'flight_planner', 'passenger_services', 'ground_services');
     END IF;
-    
+
     -- Create flight_status_enum if it doesn't exist
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'flight_status_enum') THEN
         CREATE TYPE flight_status_enum AS ENUM ('scheduled', 'delayed', 'cancelled', 'departed', 'arrived');
     END IF;
-    
-    -- Create department_enum if it doesn't exist (referenced in employees table but not defined in original code)
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'department_enum') THEN
-        CREATE TYPE department_enum AS ENUM ('hr', 'engineering', 'sales', 'marketing', 'operations', 'finance', 'it', 'customer_service');
-    END IF;
+
 END$$;
 
 -- Create tables
@@ -66,7 +62,7 @@ CREATE TABLE IF NOT EXISTS employees (
     birth_date TIMESTAMP NOT NULL,
     hire_date TIMESTAMP NOT NULL,
     position VARCHAR(100) NOT NULL,
-    department department_enum NOT NULL,
+    role role_enum NOT NULL,
     salary DECIMAL(10,2) NOT NULL,
     status status_enum DEFAULT 'active' NOT NULL,
     manager_id INT,
@@ -79,7 +75,8 @@ CREATE TABLE IF NOT EXISTS employees (
 
 -- Flights table
 CREATE TABLE IF NOT EXISTS flights (
-    flight_number VARCHAR(10) PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
+    flight_number VARCHAR(10) NOT NULL,
     departure_airport VARCHAR(3) NOT NULL,
     destination_airport VARCHAR(3) NOT NULL,
     departure_datetime TIMESTAMP NOT NULL,
@@ -88,25 +85,44 @@ CREATE TABLE IF NOT EXISTS flights (
     destination_gate_number VARCHAR(5),
     plane_registration VARCHAR(10) NOT NULL,
     status flight_status_enum NOT NULL,
-    price DECIMAL(10,2) NOT NULL
+    price DECIMAL(10,2) NOT NULL,
+    UNIQUE(flight_number, departure_datetime)
 );
 
 -- Passengers table
 CREATE TABLE IF NOT EXISTS passengers (
     id SERIAL PRIMARY KEY,
-    passenger_id VARCHAR(50) UNIQUE NOT NULL,
+    national_id VARCHAR(11) NOT NULL,
+    pnr_no VARCHAR(6) UNIQUE NOT NULL,
+    flight_id INT NOT NULL,
+    payment_id INT NOT NULL,
+    baggage_allowance INT NOT NULL,
+    baggage_id VARCHAR(12) NOT NULL,
+    fare_type VARCHAR(50) NOT NULL,
+    seat INT DEFAULT NULL,
+    meal VARCHAR(50) NOT NULL,
+    extra_baggage INT NOT NULL,
+    check_in BOOLEAN NOT NULL,
     name VARCHAR(50) NOT NULL,
     surname VARCHAR(50) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    phone VARCHAR(15),
-    address VARCHAR(255),
+    email VARCHAR(100) NOT NULL,
+    phone VARCHAR(15) NOT NULL,
     gender gender_enum NOT NULL,
     birth_date TIMESTAMP NOT NULL,
-    passport_number VARCHAR(20) UNIQUE NOT NULL,
-    nationality VARCHAR(50) NOT NULL,
-    frequent_flyer_number VARCHAR(50),
+    cip_member BOOLEAN NOT NULL,
+    vip_member BOOLEAN NOT NULL,
+    disabled BOOLEAN NOT NULL,
+    child BOOLEAN NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create luggage table for PostgreSQL
+CREATE TABLE baggages (
+    baggage_id VARCHAR(12) PRIMARY KEY,
+    baggage_allowance FLOAT DEFAULT NULL,
+    weight FLOAT NOT NULL,
+    piece INT NOT NULL
 );
 
 -- Payments table
@@ -158,14 +174,13 @@ CREATE TABLE IF NOT EXISTS users (
     phone VARCHAR(15),
     gender gender_enum NOT NULL,
     birth_date TIMESTAMP NOT NULL,
-    role role_enum DEFAULT 'user' NOT NULL,
     last_login TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_password_change TIMESTAMP
 );
 
--- Create foreign key constraints (these weren't in the original script but are good practice)
+-- Create foreign key constraints
 ALTER TABLE employees
     ADD CONSTRAINT fk_manager
     FOREIGN KEY (manager_id) REFERENCES employees(id)
@@ -176,6 +191,21 @@ ALTER TABLE flights
     FOREIGN KEY (plane_registration) REFERENCES planes(registration)
     ON DELETE RESTRICT;
 
+ALTER TABLE passengers
+    ADD CONSTRAINT fk_flight_id
+    FOREIGN KEY (flight_id) REFERENCES flights(id)
+    ON DELETE RESTRICT;
+
+ALTER TABLE passengers
+    ADD CONSTRAINT fk_payment_id
+    FOREIGN KEY (payment_id) REFERENCES payments(id)
+    ON DELETE RESTRICT;
+
+ALTER TABLE passengers
+    ADD CONSTRAINT fk_baggage_id
+    FOREIGN KEY (baggage_id) REFERENCES baggages(baggage_id)
+    ON DELETE CASCADE;
+
 ALTER TABLE refunds
     ADD CONSTRAINT fk_payment_id
     FOREIGN KEY (payment_id) REFERENCES payments(payment_id)
@@ -184,6 +214,5 @@ ALTER TABLE refunds
 -- Add indexes for performance (optional but recommended)
 CREATE INDEX IF NOT EXISTS idx_flights_status ON flights(status);
 CREATE INDEX IF NOT EXISTS idx_flights_departure ON flights(departure_datetime);
-CREATE INDEX IF NOT EXISTS idx_employees_department ON employees(department);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
