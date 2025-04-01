@@ -14,6 +14,39 @@ type OnlineCheckInRequest struct {
 	Surname string `json:"surname" binding:"alpha,min=2,max=50"`
 }
 
+// Will be updated(needs work)
+type EmployeeCheckInRequest struct {
+	PNR     string `json:"pnr" binding:"len=6,alphanum"`
+	Surname string `json:"surname" binding:"alpha,min=2,max=50"`
+}
+
+type GetPassengersBySpecificFlightRequest struct {
+	FlightNumber      string `form:"flight_number" binding:"required,len=6,alphanum"`
+	DepartureDateTime string `form:"departure_datetime" binding:"required,datetime=2006-01-02"`
+}
+
+type CreatePassengerRequest struct {
+	NationalId       string `json:"national_id" binding:"required,len=11,numeric"`
+	PnrNo            string `json:"pnr_no" binding:"required,len=6,alphanum"`
+	BaggageAllowance int    `json:"baggage_allowance" binding:"required"`
+	BaggageId        string `json:"baggage_id" binding:"required"`
+	FareType         string `json:"fare_type" binding:"required"`
+	Seat             string `json:"seat" binding:"required"`
+	Meal             string `json:"meal" binding:"required"`
+	ExtraBaggage     int    `json:"extra_baggage" binding:"required"`
+	CheckIn          bool   `json:"check_in"`
+	Name             string `json:"name" binding:"required"`
+	Surname          string `json:"surname" binding:"required"`
+	Email            string `json:"email" binding:"required,email"`
+	Phone            string `json:"phone" binding:"required,len=10,numeric"`
+	Gender           string `json:"gender" binding:"required"`
+	BirthDate        string `json:"birth_date"`
+	CipMember        bool   `json:"cip_member"`
+	VipMember        bool   `json:"vip_member"`
+	Disabled         bool   `json:"disabled"`
+	Child            bool   `json:"child"`
+}
+
 type GetEmployeeByIdRequest struct {
 	ID uint `json:"id" binding:"required"`
 }
