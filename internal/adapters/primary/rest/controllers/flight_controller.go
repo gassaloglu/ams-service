@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"ams-service/internal/core/entities"
-	"ams-service/internal/core/services"
+	"ams-service/internal/ports/primary"
 	"ams-service/internal/utils"
 	"net/http"
 	"time"
@@ -12,10 +12,10 @@ import (
 )
 
 type FlightController struct {
-	service *services.FlightService
+	service primary.FlightService
 }
 
-func NewFlightController(service *services.FlightService) *FlightController {
+func NewFlightController(service primary.FlightService) *FlightController {
 	return &FlightController{service: service}
 }
 
@@ -37,7 +37,7 @@ func (c *FlightController) GetSpecificFlight(ctx *gin.Context) {
 	resultChan := make(chan entities.Flight)
 	errorChan := make(chan error)
 
-	c.service.GetSpecificFlight(request, userID, resultChan, errorChan)
+	c.service.GetSpecificFlight(request, userID)
 
 	select {
 	case flight := <-resultChan:

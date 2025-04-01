@@ -2,37 +2,28 @@ package services
 
 import (
 	"ams-service/internal/core/entities"
+	"ams-service/internal/ports/primary"
+	"ams-service/internal/ports/secondary"
 
 	"github.com/rs/zerolog/log"
 )
 
-type FlightRepository interface {
-	GetSpecificFlight(request entities.GetSpecificFlightRequest) (entities.Flight, error)
-	GetAllFlights() ([]entities.Flight, error)
-	GetAllSpecificFlights(request entities.GetSpecificFlightsRequest) ([]entities.Flight, error)
-	GetAllActiveFlights() ([]entities.Flight, error)
-	CancelFlight(request entities.CancelFlightRequest) error
-}
-
 type FlightService struct {
-	repo FlightRepository
+	repo secondary.FlightRepository
 }
 
-func NewFlightService(repo FlightRepository) *FlightService {
+func NewFlightService(repo secondary.FlightRepository) primary.FlightService {
 	return &FlightService{repo: repo}
 }
 
-func (s *FlightService) GetSpecificFlight(request entities.GetSpecificFlightRequest, userID string, resultChan chan<- entities.Flight, errorChan chan<- error) {
-	go func() {
-		flight, err := s.repo.GetSpecificFlight(request)
-		if err != nil {
-			log.Error().Err(err).Str("user_id", userID).Msg("Error getting flight by number and departure datetime")
-			errorChan <- err
-			return
-		}
-		log.Info().Str("user_id", userID).Msg("Successfully retrieved flight by number and departure datetime")
-		resultChan <- flight
-	}()
+func (s *FlightService) GetSpecificFlight(request entities.GetSpecificFlightRequest, userID string) (entities.Flight, error) {
+	flight, err := s.repo.GetSpecificFlight(request)
+	if err != nil {
+		log.Error().Err(err).Str("user_id", userID).Msg("Error getting flight by number and departure datetime")
+		return entities.Flight{}, err
+	}
+	log.Info().Str("user_id", userID).Msg("Successfully retrieved flight by number and departure datetime")
+	return flight, nil
 }
 
 func (s *FlightService) GetAllFlights() ([]entities.Flight, error) {

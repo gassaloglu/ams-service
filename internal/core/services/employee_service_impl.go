@@ -3,8 +3,9 @@ package services
 import (
 	"ams-service/internal/config"
 	"ams-service/internal/core/entities"
+	"ams-service/internal/ports/primary"
+	"ams-service/internal/ports/secondary"
 	"ams-service/internal/utils"
-	"context"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -13,20 +14,15 @@ import (
 
 var EmployeeTokenExpiryDuration = time.Hour * 72
 
-type EmployeeRepository interface {
-	GetEmployeeByID(request entities.GetEmployeeByIdRequest) (entities.Employee, error)
-	RegisterEmployee(request entities.RegisterEmployeeRequest) error
-	LoginEmployee(employeeID, password string) (*entities.Employee, error)
-}
-type EmployeeService struct {
-	repo EmployeeRepository
+type EmployeeServiceImpl struct {
+	repo secondary.EmployeeRepository
 }
 
-func NewEmployeeService(repo EmployeeRepository) *EmployeeService {
-	return &EmployeeService{repo: repo}
+func NewEmployeeService(repo secondary.EmployeeRepository) primary.EmployeeService {
+	return &EmployeeServiceImpl{repo: repo}
 }
 
-func (s *EmployeeService) GetEmployeeByID(request entities.GetEmployeeByIdRequest) (entities.Employee, error) {
+func (s *EmployeeServiceImpl) GetEmployeeByID(request entities.GetEmployeeByIdRequest) (entities.Employee, error) {
 	employee, err := s.repo.GetEmployeeByID(request)
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting employee by ID")
@@ -35,7 +31,7 @@ func (s *EmployeeService) GetEmployeeByID(request entities.GetEmployeeByIdReques
 	return employee, nil
 }
 
-func (s *EmployeeService) RegisterEmployee(request entities.RegisterEmployeeRequest) error {
+func (s *EmployeeServiceImpl) RegisterEmployee(request entities.RegisterEmployeeRequest) error {
 	salt, err := utils.GenerateSalt(16)
 	if err != nil {
 		log.Error().Err(err).Msg("Error generating salt")
@@ -60,7 +56,7 @@ func (s *EmployeeService) RegisterEmployee(request entities.RegisterEmployeeRequ
 	return nil
 }
 
-func (s *EmployeeService) LoginEmployee(ctx context.Context, employeeID, password string) (*entities.Employee, string, error) {
+func (s *EmployeeServiceImpl) LoginEmployee(employeeID, password string) (*entities.Employee, string, error) {
 	employee, err := s.repo.LoginEmployee(employeeID, password)
 	if err != nil {
 		log.Error().Err(err).Str("employee_id", employeeID).Msg("Error logging in employee")

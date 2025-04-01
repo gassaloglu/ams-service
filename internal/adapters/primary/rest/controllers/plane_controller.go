@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"ams-service/internal/core/entities"
-	"ams-service/internal/core/services"
+	"ams-service/internal/ports/primary"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,10 +12,10 @@ import (
 /* ADAPTER - HANDLER */
 
 type PlaneController struct {
-	service *services.PlaneService
+	service primary.PlaneService
 }
 
-func NewPlaneController(service *services.PlaneService) *PlaneController {
+func NewPlaneController(service primary.PlaneService) *PlaneController {
 	return &PlaneController{service: service}
 }
 
