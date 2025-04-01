@@ -1,9 +1,9 @@
 package main
 
 import (
-	"ams-service/app"
+	application "ams-service/internal"
 )
 
 func main() {
-	app.Run()
+	application.Run()
 }
