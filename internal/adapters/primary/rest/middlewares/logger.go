@@ -3,31 +3,34 @@ package middlewares
 import (
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 )
 
-func Logger() gin.HandlerFunc {
-	return func(c *gin.Context) {
+func Logger() fiber.Handler {
+	return func(c *fiber.Ctx) error {
 		// Start timer
 		start := time.Now()
 
 		// Process request
-		c.Next()
+		err := c.Next()
+		if err != nil {
+			return err
+		}
 
 		// Get request timing
 		latency := time.Since(start)
 
 		// Get status code and size
-		statusCode := c.Writer.Status()
-		size := c.Writer.Size()
+		statusCode := c.Response().StatusCode()
+		size := len(c.Response().Body())
 
 		// Get client IP
-		clientIP := c.ClientIP()
+		clientIP := c.IP()
 
 		// Get path
-		path := c.Request.URL.Path
-		raw := c.Request.URL.RawQuery
+		path := c.Path()
+		raw := string(c.Request().URI().QueryString())
 
 		// Log the request
 		logEvent := log.Info()
@@ -42,11 +45,13 @@ func Logger() gin.HandlerFunc {
 
 		// Log the request details
 		logEvent.
-			Str("method", c.Request.Method).
+			Str("method", c.Method()).
 			Str("path", path).
 			Dur("latency", latency).
 			Str("ip", clientIP).
 			Int("size", size).
 			Msg("HTTP Request")
+
+		return nil
 	}
 }

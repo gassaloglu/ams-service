@@ -6,11 +6,11 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
-func ExtractIDFromToken(ctx *gin.Context, idKey string) (string, error) {
-	authHeader := ctx.GetHeader("Authorization")
+func ExtractIDFromToken(ctx *fiber.Ctx, idKey string) (string, error) {
+	authHeader := ctx.Get("Authorization")
 	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -40,10 +40,10 @@ func ExtractIDFromToken(ctx *gin.Context, idKey string) (string, error) {
 	return "", fmt.Errorf("invalid token")
 }
 
-func ExtractUserIDFromToken(ctx *gin.Context) (string, error) {
+func ExtractUserIDFromToken(ctx *fiber.Ctx) (string, error) {
 	return ExtractIDFromToken(ctx, "user_id")
 }
 
-func ExtractEmployeeIDFromToken(ctx *gin.Context) (string, error) {
+func ExtractEmployeeIDFromToken(ctx *fiber.Ctx) (string, error) {
 	return ExtractIDFromToken(ctx, "employee_id")
 }

@@ -4,16 +4,14 @@ import (
 	"ams-service/internal/adapters/primary/rest/controllers"
 	"ams-service/internal/adapters/primary/rest/middlewares"
 	"ams-service/internal/config"
-	"github.com/gin-gonic/gin"
+
+	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterEmployeeRoutes(router *gin.Engine, employeeController *controllers.EmployeeController) {
-	employeeRoute := router.Group("/employee")
-	{
-		employeeRoute.GET("/:id", employeeController.GetEmployeeByID)
-		employeeRoute.POST("/register", employeeController.RegisterEmployee)
-		employeeRoute.POST("/login", employeeController.LoginEmployee)
-		employeeRoute.Use(middlewares.AuthMiddleware(config.JWTSecretKey))
-		//t
-	}
+func RegisterEmployeeRoutes(app *fiber.App, employeeController *controllers.EmployeeController) {
+	employeeRoute := app.Group("/employee")
+	employeeRoute.Get("/:id", employeeController.GetEmployeeByID)
+	employeeRoute.Post("/register", employeeController.RegisterEmployee)
+	employeeRoute.Post("/login", employeeController.LoginEmployee)
+	employeeRoute.Use(middlewares.AuthMiddleware(config.JWTSecretKey))
 }
