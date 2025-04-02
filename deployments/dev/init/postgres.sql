@@ -214,5 +214,4 @@ ALTER TABLE refunds
 -- Add indexes for performance (optional but recommended)
 CREATE INDEX IF NOT EXISTS idx_flights_status ON flights(status);
 CREATE INDEX IF NOT EXISTS idx_flights_departure ON flights(departure_datetime);
-CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
