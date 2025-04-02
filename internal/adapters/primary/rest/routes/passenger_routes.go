@@ -12,6 +12,6 @@ func RegisterPassengerRoutes(app *fiber.App, passengerController *controllers.Pa
 	passengerRoute.Get("/pnr", passengerController.GetPassengerByPNR)
 	passengerRoute.Post("/check-in", passengerController.OnlineCheckInPassenger)
 	passengerRoute.Get("/flight", passengerController.GetPassengersBySpecificFlight)
-	passengerRoute.Post("/", passengerController.CreatePassenger)
+	passengerRoute.Post("/create", passengerController.CreatePassenger)
 	passengerRoute.Get("/all", passengerController.GetAllPassengers)
 }

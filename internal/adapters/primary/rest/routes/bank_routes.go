@@ -8,7 +8,8 @@ import (
 
 func RegisterBankRoutes(app *fiber.App, bankController *controllers.BankController) {
 	bankRoute := app.Group("/bank")
-	bankRoute.Post("/card", bankController.AddCreditCard)
-	bankRoute.Get("/cards", bankController.GetAllCreditCards)
+	bankRoute.Post("/card/add", bankController.AddCreditCard)
+	bankRoute.Get("/card/all", bankController.GetAllCreditCards)
 	bankRoute.Post("/pay", bankController.Pay)
+	bankRoute.Post("/refund", bankController.Refund)
 }

@@ -8,9 +8,9 @@ import (
 
 func RegisterFlightRoutes(app *fiber.App, flightController *controllers.FlightController) {
 	flightRoute := app.Group("/flight")
-	flightRoute.Get("/specific", flightController.GetSpecificFlight)
+	flightRoute.Get("/", flightController.GetSpecificFlight)
 	flightRoute.Get("/all", flightController.GetAllFlights)
-	flightRoute.Get("/all-specific", flightController.GetAllSpecificFlights)
-	flightRoute.Get("/all-active", flightController.GetAllActiveFlights)
-	flightRoute.Post("/cancel", flightController.CancelFlight)
+	flightRoute.Get("/all/", flightController.GetAllSpecificFlights)
+	flightRoute.Get("/active", flightController.GetAllActiveFlights)
+	flightRoute.Patch("/cancel", flightController.CancelFlight)
 }
