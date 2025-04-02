@@ -36,8 +36,8 @@ func (s *FlightService) GetAllFlights() ([]entities.Flight, error) {
 	return flights, nil
 }
 
-func (s *FlightService) GetAllSpecificFlights(request entities.GetSpecificFlightsRequest) ([]entities.Flight, error) {
-	flights, err := s.repo.GetAllSpecificFlights(request)
+func (s *FlightService) GetAllFlightsDestinationDateFlights(request entities.GetAllFlightsDestinationDateRequest) ([]entities.Flight, error) {
+	flights, err := s.repo.GetAllFlightsDestinationDateFlights(request)
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting specific flights")
 		return nil, err

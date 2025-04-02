@@ -57,7 +57,7 @@ func (r *FlightRepositoryImpl) GetAllFlights() ([]entities.Flight, error) {
 	return flights, nil
 }
 
-func (r *FlightRepositoryImpl) GetAllSpecificFlights(request entities.GetSpecificFlightsRequest) ([]entities.Flight, error) {
+func (r *FlightRepositoryImpl) GetAllFlightsDestinationDateFlights(request entities.GetAllFlightsDestinationDateRequest) ([]entities.Flight, error) {
 	log.Info().
 		Str("departure_airport", request.DepartureAirport).
 		Str("destination_airport", request.DestinationAirport).
@@ -131,10 +131,22 @@ func (r *FlightRepositoryImpl) CancelFlight(request entities.CancelFlightRequest
 	log.Info().Str("flight_number", request.FlightNumber).Str("flight_date", request.FlightDate).Msg("Canceling flight")
 
 	query := `UPDATE flights SET status = 'cancelled' WHERE flight_number = $1 AND departure_datetime::date = $2`
-	_, err := r.db.Exec(query, request.FlightNumber, request.FlightDate)
+	result, err := r.db.Exec(query, request.FlightNumber, request.FlightDate)
 	if err != nil {
 		log.Error().Err(err).Str("flight_number", request.FlightNumber).Str("flight_date", request.FlightDate).Msg("Error canceling flight")
 		return err
 	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Error().Err(err).Msg("Error retrieving rows affected")
+		return err
+	}
+
+	if rowsAffected == 0 {
+		log.Warn().Str("flight_number", request.FlightNumber).Str("flight_date", request.FlightDate).Msg("No flight found to cancel")
+		return sql.ErrNoRows
+	}
+
 	return nil
 }

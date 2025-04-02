@@ -10,7 +10,7 @@ func RegisterFlightRoutes(app *fiber.App, flightController *controllers.FlightCo
 	flightRoute := app.Group("/flight")
 	flightRoute.Get("/", flightController.GetSpecificFlight)
 	flightRoute.Get("/all", flightController.GetAllFlights)
-	flightRoute.Get("/all/", flightController.GetAllSpecificFlights)
+	flightRoute.Get("/all/", flightController.GetAllFlightsDestinationDateFlights)
 	flightRoute.Get("/active", flightController.GetAllActiveFlights)
 	flightRoute.Patch("/cancel", flightController.CancelFlight)
 }
