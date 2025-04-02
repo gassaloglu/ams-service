@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
@@ -90,29 +90,32 @@ func Run() {
 	flightController := controllers.NewFlightController(flightService)
 	bankController := controllers.NewBankController(bankService)
 
-	// Setup router
-	gin.SetMode("release")
-	router := gin.Default()
-	router.Use(middlewares.Logger())
-	router.Use(middlewares.ErrorHandler())
+	// Setup Fiber app
+	app := fiber.New(fiber.Config{
+		AppName: "AMS Service",
+	})
+
+	// Add middleware
+	app.Use(middlewares.Logger())
+	app.Use(middlewares.ErrorHandler())
 
 	// Register routes
-	routes.RegisterPlaneRoutes(router, planeController)
-	routes.RegisterFlightRoutes(router, flightController)
-	routes.RegisterPassengerRoutes(router, passengerController)
-	routes.RegisterUserRoutes(router, userController)
-	routes.RegisterEmployeeRoutes(router, employeeController)
-	routes.RegisterBankRoutes(router, bankController)
+	routes.RegisterUserRoutes(app, userController)
+	routes.RegisterEmployeeRoutes(app, employeeController)
+	routes.RegisterPassengerRoutes(app, passengerController)
+	routes.RegisterPlaneRoutes(app, planeController)
+	routes.RegisterFlightRoutes(app, flightController)
+	routes.RegisterBankRoutes(app, bankController)
 
-	// Run the server
-	log.Info().
-		Str("port", cfg.ServerPort).
-		Msg("Starting REST server")
+	// Start server
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
-	err = router.Run(fmt.Sprintf(":%s", cfg.ServerPort))
-
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to start server")
+	log.Info().Str("port", port).Msg("Starting server")
+	if err := app.Listen(":" + port); err != nil {
+		log.Fatal().Err(err).Msg("Failed to start server")
 	}
 }
 

@@ -3,15 +3,12 @@ package routes
 import (
 	"ams-service/internal/adapters/primary/rest/controllers"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterBankRoutes(router *gin.Engine, bankController *controllers.BankController) {
-	bankRoute := router.Group("/bank")
-	{
-		bankRoute.POST("/card/add", bankController.AddCreditCard)
-		bankRoute.GET("/card/all", bankController.GetAllCreditCards)
-		bankRoute.POST("/pay", bankController.Pay)
-		bankRoute.POST("/refund", bankController.Refund)
-	}
+func RegisterBankRoutes(app *fiber.App, bankController *controllers.BankController) {
+	bankRoute := app.Group("/bank")
+	bankRoute.Post("/card", bankController.AddCreditCard)
+	bankRoute.Get("/cards", bankController.GetAllCreditCards)
+	bankRoute.Post("/pay", bankController.Pay)
 }

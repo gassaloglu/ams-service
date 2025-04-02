@@ -5,7 +5,7 @@ import (
 	"ams-service/internal/ports/primary"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 )
 
@@ -17,63 +17,56 @@ func NewBankController(service primary.BankService) *BankController {
 	return &BankController{service: service}
 }
 
-func (c *BankController) AddCreditCard(ctx *gin.Context) {
+func (c *BankController) AddCreditCard(ctx *fiber.Ctx) error {
 	var card entities.CreditCard
-	if err := ctx.ShouldBindJSON(&card); err != nil {
+	if err := ctx.BodyParser(&card); err != nil {
 		log.Error().Err(err).Msg("Error binding JSON")
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
-		return
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
 	err := c.service.AddCreditCard(card)
 	if err != nil {
 		log.Error().Err(err).Msg("Error adding credit card")
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Server error"})
-		return
+		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Server error"})
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "Credit card added successfully"})
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Credit card added successfully"})
 }
 
-func (c *BankController) GetAllCreditCards(ctx *gin.Context) {
+func (c *BankController) GetAllCreditCards(ctx *fiber.Ctx) error {
 	cards, err := c.service.GetAllCreditCards()
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting credit cards")
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Server error"})
-		return
+		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Server error"})
 	}
-	ctx.JSON(http.StatusOK, cards)
+	return ctx.Status(http.StatusOK).JSON(cards)
 }
 
-func (c *BankController) Pay(ctx *gin.Context) {
+func (c *BankController) Pay(ctx *fiber.Ctx) error {
 	var request entities.PaymentRequest
-	if err := ctx.ShouldBindJSON(&request); err != nil {
+	if err := ctx.BodyParser(&request); err != nil {
 		log.Error().Err(err).Msg("Error binding JSON")
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
-		return
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
 	err := c.service.Pay(request)
 	if err != nil {
 		log.Error().Err(err).Msg("Error processing payment")
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Server error"})
-		return
+		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Server error"})
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "Payment processed successfully"})
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Payment processed successfully"})
 }
 
-func (c *BankController) Refund(ctx *gin.Context) {
+func (c *BankController) Refund(ctx *fiber.Ctx) error {
 	var request entities.RefundRequest
-	if err := ctx.ShouldBindJSON(&request); err != nil {
+	if err := ctx.BodyParser(&request); err != nil {
 		log.Error().Err(err).Msg("Error binding JSON")
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
-		return
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
 	err := c.service.Refund(request)
 	if err != nil {
 		log.Error().Err(err).Msg("Error processing refund")
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Server error"})
-		return
+		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Server error"})
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "Refund processed successfully"})
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Refund processed successfully"})
 }

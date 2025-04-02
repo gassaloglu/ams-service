@@ -3,17 +3,15 @@ package routes
 import (
 	"ams-service/internal/adapters/primary/rest/controllers"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterPassengerRoutes(router *gin.Engine, passengerController *controllers.PassengerController) {
-	passengerRoute := router.Group("/passenger")
-	{
-		passengerRoute.POST("/checkin", passengerController.OnlineCheckInPassenger)
-		passengerRoute.GET("/id", passengerController.GetPassengerByID)
-		passengerRoute.GET("/pnr", passengerController.GetPassengerByPNR)
-		passengerRoute.GET("/flight", passengerController.GetPassengersBySpecificFlight)
-		passengerRoute.POST("/create", passengerController.CreatePassenger)
-		passengerRoute.GET("/all", passengerController.GetAllPassengers)
-	}
+func RegisterPassengerRoutes(app *fiber.App, passengerController *controllers.PassengerController) {
+	passengerRoute := app.Group("/passenger")
+	passengerRoute.Get("/id", passengerController.GetPassengerByID)
+	passengerRoute.Get("/pnr", passengerController.GetPassengerByPNR)
+	passengerRoute.Post("/check-in", passengerController.OnlineCheckInPassenger)
+	passengerRoute.Get("/flight", passengerController.GetPassengersBySpecificFlight)
+	passengerRoute.Post("/", passengerController.CreatePassenger)
+	passengerRoute.Get("/all", passengerController.GetAllPassengers)
 }

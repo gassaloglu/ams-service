@@ -6,26 +6,26 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 )
 
-func AuthMiddleware(jwtSecretKey string) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
+func AuthMiddleware(jwtSecretKey string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		authHeader := c.Get("Authorization")
 		if authHeader == "" {
 			log.Error().Msg("Authorization header is required")
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
-			c.Abort()
-			return
+			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Authorization header is required",
+			})
 		}
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		if tokenString == authHeader {
 			log.Error().Msg("Bearer token is required")
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Bearer token is required"})
-			c.Abort()
-			return
+			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Bearer token is required",
+			})
 		}
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -37,12 +37,12 @@ func AuthMiddleware(jwtSecretKey string) gin.HandlerFunc {
 
 		if err != nil || !token.Valid {
 			log.Error().Err(err).Msg("Invalid token")
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-			c.Abort()
-			return
+			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Invalid token",
+			})
 		}
 
 		log.Info().Msg("Token validated successfully")
-		c.Next()
+		return c.Next()
 	}
 }

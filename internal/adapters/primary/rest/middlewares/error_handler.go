@@ -3,19 +3,17 @@ package middlewares
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 )
 
-func ErrorHandler() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Next()
-
-		if len(c.Errors) > 0 {
-			for _, e := range c.Errors {
-				log.Error().Err(e.Err).Msg("Request error")
-			}
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+func ErrorHandler() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		err := c.Next()
+		if err != nil {
+			log.Error().Err(err).Msg("Request error")
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Internal server error"})
 		}
+		return nil
 	}
 }

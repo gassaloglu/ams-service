@@ -5,7 +5,7 @@ import (
 	"ams-service/internal/ports/primary"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 )
 
@@ -17,36 +17,46 @@ func NewUserController(service primary.UserService) *UserController {
 	return &UserController{service: service}
 }
 
-func (c *UserController) RegisterUser(ctx *gin.Context) {
+func (c *UserController) RegisterUser(ctx *fiber.Ctx) error {
 	var user entities.User
-	if err := ctx.ShouldBindJSON(&user); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "TODO: Error binding JSON"})
-		return
+	if err := ctx.BodyParser(&user); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": "Error binding JSON",
+		})
 	}
 
 	err := c.service.RegisterUser(user)
 	if err != nil {
 		log.Error().Err(err).Str("username", user.Username).Msg("Error registering user")
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "TODO: Registration failed"})
-		return
+		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Registration failed",
+		})
 	}
+
 	log.Info().Str("username", user.Username).Msg("Successfully registered user")
-	ctx.JSON(http.StatusOK, gin.H{"message": "TODO: Registration successful"})
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "Registration successful",
+	})
 }
 
-func (c *UserController) LoginUser(ctx *gin.Context) {
+func (c *UserController) LoginUser(ctx *fiber.Ctx) error {
 	var loginRequest entities.LoginRequest
-
-	if err := ctx.ShouldBindJSON(&loginRequest); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	if err := ctx.BodyParser(&loginRequest); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	user, token, err := c.service.LoginUser(loginRequest.Username, loginRequest.Password)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
-		return
+		return ctx.Status(http.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid username or password",
+		})
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "Login successful", "token": token, "user": user})
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "Login successful",
+		"token":   token,
+		"user":    user,
+	})
 }
