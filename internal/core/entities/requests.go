@@ -47,10 +47,6 @@ type CreatePassengerRequest struct {
 	Child            bool   `json:"child"`
 }
 
-type GetEmployeeByIdRequest struct {
-	ID uint `json:"id" binding:"required"`
-}
-
 type RegisterEmployeeRequest struct {
 	Employee Employee
 }
@@ -86,6 +82,11 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type LoginEmployeeRequest struct {
+	EmployeeID string `json:"employee_id"`
+	Password   string `json:"password"`
+}
+
 type GetAllFlightsDestinationDateRequest struct {
 	DepartureAirport   string `form:"departure_airport" binding:"required,len=3,alpha"`
 	DestinationAirport string `form:"destination_airport" binding:"required,len=3,alpha"`
@@ -95,4 +96,8 @@ type GetAllFlightsDestinationDateRequest struct {
 type CancelFlightRequest struct {
 	FlightNumber string `json:"flight_number" binding:"required"`
 	FlightDate   string `json:"flight_date" binding:"required,datetime=2006-01-02"`
+}
+
+type GetEmployeeByIdRequest struct {
+	EmployeeID string `json:"employee_id" binding:"required"`
 }

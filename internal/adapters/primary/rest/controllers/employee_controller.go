@@ -4,7 +4,6 @@ import (
 	"ams-service/internal/core/entities"
 	"ams-service/internal/ports/primary"
 	"net/http"
-	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
@@ -19,20 +18,22 @@ func NewEmployeeController(service primary.EmployeeService) *EmployeeController 
 }
 
 func (c *EmployeeController) GetEmployeeByID(ctx *fiber.Ctx) error {
-	idParam := ctx.Params("id")
-	id, err := strconv.Atoi(idParam)
-	if err != nil {
-		log.Error().Err(err).Str("id", idParam).Msg("Error converting ID")
-		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
+	employeeID := ctx.Query("employee_id")
+	if employeeID == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Employee ID is required",
+		})
 	}
 
-	request := entities.GetEmployeeByIdRequest{ID: uint(id)}
+	request := entities.GetEmployeeByIdRequest{EmployeeID: employeeID}
 	employee, err := c.service.GetEmployeeByID(request)
 	if err != nil {
-		log.Error().Err(err).Uint("id", uint(id)).Msg("Error getting employee by ID")
-		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Server error"})
+		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Employee not found",
+		})
 	}
-	return ctx.Status(http.StatusOK).JSON(employee)
+
+	return ctx.Status(fiber.StatusOK).JSON(employee)
 }
 
 func (c *EmployeeController) RegisterEmployee(ctx *fiber.Ctx) error {
@@ -51,18 +52,23 @@ func (c *EmployeeController) RegisterEmployee(ctx *fiber.Ctx) error {
 }
 
 func (c *EmployeeController) LoginEmployee(ctx *fiber.Ctx) error {
-	var loginRequest entities.LoginRequest
-
+	var loginRequest entities.LoginEmployeeRequest
 	if err := ctx.BodyParser(&loginRequest); err != nil {
-		log.Error().Err(err).Msg("Error binding JSON")
-		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request payload",
+		})
 	}
 
-	employee, token, err := c.service.LoginEmployee(loginRequest.Username, loginRequest.Password)
+	employee, token, err := c.service.LoginEmployee(loginRequest.EmployeeID, loginRequest.Password)
 	if err != nil {
-		log.Error().Err(err).Msg("Error logging in employee")
-		return ctx.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid employee ID or password"})
+		return ctx.Status(http.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid employee ID or password",
+		})
 	}
 
-	return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Login successful", "token": token, "employee": employee})
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
+		"message":  "Login successful",
+		"token":    token,
+		"employee": employee,
+	})
 }

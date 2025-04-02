@@ -10,8 +10,12 @@ import (
 
 func RegisterEmployeeRoutes(app *fiber.App, employeeController *controllers.EmployeeController) {
 	employeeRoute := app.Group("/employee")
-	employeeRoute.Get("/:id", employeeController.GetEmployeeByID)
-	employeeRoute.Post("/register", employeeController.RegisterEmployee)
+
+	// Public routes
 	employeeRoute.Post("/login", employeeController.LoginEmployee)
+	employeeRoute.Post("/register", employeeController.RegisterEmployee)
+
+	// Protected routes (require AuthMiddleware)
 	employeeRoute.Use(middlewares.AuthMiddleware(config.JWTSecretKey))
+	employeeRoute.Get("/", employeeController.GetEmployeeByID)
 }

@@ -26,11 +26,28 @@ func (r *UserRepositoryImpl) RegisterUser(user entities.User) error {
 		Msg("Registering user")
 
 	query := `
-        INSERT INTO users (name, surname, username, email, password_hash, salt, phone, gender, birth_date, role, last_login, created_at, updated_at, last_password_change)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        INSERT INTO users (
+            name, surname, username, email, password_hash, salt, phone, gender, birth_date, 
+            last_login, created_at, updated_at, last_password_change
+        ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, DEFAULT, DEFAULT, $11
+        )
     `
 
-	_, err := r.db.Exec(query, user.Name, user.Surname, user.Username, user.Email, user.PasswordHash, user.Salt, user.Phone, user.Gender, user.BirthDate, user.Role, user.LastLogin, user.CreatedAt, user.UpdatedAt, user.LastPasswordChange)
+	_, err := r.db.Exec(
+		query,
+		user.Name,
+		user.Surname,
+		user.Username,
+		user.Email,
+		user.PasswordHash,
+		user.Salt,
+		user.Phone,
+		user.Gender,
+		user.BirthDate,
+		user.LastLogin,
+		user.LastPasswordChange,
+	)
 	if err != nil {
 		log.Error().
 			Err(err).
@@ -38,6 +55,7 @@ func (r *UserRepositoryImpl) RegisterUser(user entities.User) error {
 			Msg("Error registering user")
 		return err
 	}
+
 	log.Info().
 		Str("username", user.Username).
 		Msg("Successfully registered user")
@@ -47,11 +65,31 @@ func (r *UserRepositoryImpl) RegisterUser(user entities.User) error {
 func (r *UserRepositoryImpl) LoginUser(username, password string) (*entities.User, error) {
 	log.Info().Str("username", username).Msg("Logging in user")
 
-	query := `SELECT id, name, surname, username, email, password_hash, salt FROM users WHERE username = $1`
+	query := `
+        SELECT id, name, surname, username, email, password_hash, salt, phone, gender, birth_date, 
+               last_login, created_at, updated_at, last_password_change 
+        FROM users 
+        WHERE username = $1
+    `
 	row := r.db.QueryRow(query, username)
 
 	var user entities.User
-	err := row.Scan(&user.ID, &user.Name, &user.Surname, &user.Username, &user.Email, &user.PasswordHash, &user.Salt)
+	err := row.Scan(
+		&user.ID,
+		&user.Name,
+		&user.Surname,
+		&user.Username,
+		&user.Email,
+		&user.PasswordHash,
+		&user.Salt,
+		&user.Phone,
+		&user.Gender,
+		&user.BirthDate,
+		&user.LastLogin,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.LastPasswordChange,
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Error().Str("username", username).Msg("User not found")
