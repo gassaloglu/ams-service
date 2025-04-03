@@ -16,10 +16,10 @@ type Employee struct {
 	BirthDate        time.Time `json:"birth_date" gorm:"not null"`
 	HireDate         time.Time `json:"hire_date" gorm:"not null"`
 	Position         string    `json:"position" gorm:"size:100;not null"`
-	Department       string    `json:"department" gorm:"type:department_enum;not null"`
+	Role             string    `json:"role" gorm:"type:role_enum;not null"`
 	Salary           float64   `json:"salary" gorm:"type:decimal(10,2);not null"`
 	Status           string    `json:"status" gorm:"type:status_enum;default:'active';not null"`
-	ManagerID        *uint     `json:"manager_id"`
+	ManagerID        *uint     `json:"manager_id" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
 	EmergencyContact string    `json:"emergency_contact" gorm:"size:100"`
 	EmergencyPhone   string    `json:"emergency_phone" gorm:"size:15"`
 	ProfileImageURL  string    `json:"profile_image_url" gorm:"size:255"`

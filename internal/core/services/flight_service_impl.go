@@ -36,8 +36,8 @@ func (s *FlightService) GetAllFlights() ([]entities.Flight, error) {
 	return flights, nil
 }
 
-func (s *FlightService) GetAllSpecificFlights(request entities.GetSpecificFlightsRequest) ([]entities.Flight, error) {
-	flights, err := s.repo.GetAllSpecificFlights(request)
+func (s *FlightService) GetAllFlightsDestinationDateFlights(request entities.GetAllFlightsDestinationDateRequest) ([]entities.Flight, error) {
+	flights, err := s.repo.GetAllFlightsDestinationDateFlights(request)
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting specific flights")
 		return nil, err
@@ -59,7 +59,7 @@ func (s *FlightService) GetAllActiveFlights() ([]entities.Flight, error) {
 func (s *FlightService) CancelFlight(request entities.CancelFlightRequest) error {
 	err := s.repo.CancelFlight(request)
 	if err != nil {
-		log.Error().Err(err).Str("flight_number", request.FlightNumber).Msg("Error canceling flight")
+		log.Error().Err(err).Str("flight_number", request.FlightNumber).Msg("TODO: Error canceling flight")
 		return err
 	}
 	log.Info().Str("flight_number", request.FlightNumber).Msg("Successfully canceled flight")

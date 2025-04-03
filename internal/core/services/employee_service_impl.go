@@ -25,7 +25,7 @@ func NewEmployeeService(repo secondary.EmployeeRepository) primary.EmployeeServi
 func (s *EmployeeServiceImpl) GetEmployeeByID(request entities.GetEmployeeByIdRequest) (entities.Employee, error) {
 	employee, err := s.repo.GetEmployeeByID(request)
 	if err != nil {
-		log.Error().Err(err).Msg("Error getting employee by ID")
+		log.Error().Err(err).Str("employee_id", request.EmployeeID).Msg("Error getting employee by employee_id")
 		return entities.Employee{}, err
 	}
 	return employee, nil
