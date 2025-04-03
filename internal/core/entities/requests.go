@@ -73,8 +73,8 @@ type GetPlaneByLocationRequest struct {
 }
 
 type GetSpecificFlightRequest struct {
-	FlightNumber      string `form:"flight_number"`
-	DepartureDateTime string `form:"departure_datetime"`
+	FlightNumber      string `query:"flight_number"`
+	DepartureDateTime string `query:"departure_datetime"`
 }
 
 type LoginRequest struct {
@@ -88,9 +88,9 @@ type LoginEmployeeRequest struct {
 }
 
 type GetAllFlightsDestinationDateRequest struct {
-	DepartureAirport   string `form:"departure_airport" binding:"required,len=3,alpha"`
-	DestinationAirport string `form:"destination_airport" binding:"required,len=3,alpha"`
-	DepartureDateTime  string `form:"departure_datetime" binding:"required,datetime=2006-01-02"`
+	DepartureAirport   string `query:"departure_airport" binding:"required,len=3,alpha"`
+	DestinationAirport string `query:"destination_airport" binding:"required,len=3,alpha"`
+	DepartureDateTime  string `query:"departure_datetime" binding:"required,datetime=2006-01-02"`
 }
 
 type CancelFlightRequest struct {

@@ -59,7 +59,7 @@ func (s *FlightService) GetAllActiveFlights() ([]entities.Flight, error) {
 func (s *FlightService) CancelFlight(request entities.CancelFlightRequest) error {
 	err := s.repo.CancelFlight(request)
 	if err != nil {
-		log.Error().Err(err).Str("flight_number", request.FlightNumber).Msg("Error canceling flight")
+		log.Error().Err(err).Str("flight_number", request.FlightNumber).Msg("TODO: Error canceling flight")
 		return err
 	}
 	log.Info().Str("flight_number", request.FlightNumber).Msg("Successfully canceled flight")

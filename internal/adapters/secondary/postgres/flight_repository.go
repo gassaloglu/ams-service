@@ -16,16 +16,8 @@ func NewFlightRepositoryImpl(db *sql.DB) secondary.FlightRepository {
 	return &FlightRepositoryImpl{db: db}
 }
 
-func (r *FlightRepositoryImpl) GetSpecificFlight(request entities.GetSpecificFlightRequest) (entities.Flight, error) {
-	log.Info().Str("flight_number", request.FlightNumber).Str("departure_datetime", request.DepartureDateTime).Msg("Getting flight by number and departure datetime")
-
-	query := `
-        SELECT flight_number, departure_airport, destination_airport, departure_datetime, arrival_datetime, 
-               departure_gate_number, destination_gate_number, plane_registration, status, price 
-        FROM flights 
-        WHERE flight_number = $1 AND departure_datetime = $2`
-	row := r.db.QueryRow(query, request.FlightNumber, request.DepartureDateTime)
-
+// Helper function to scan flight rows
+func scanFlightRow(row *sql.Row) (entities.Flight, error) {
 	var flight entities.Flight
 	err := row.Scan(
 		&flight.FlightNumber,
@@ -39,6 +31,49 @@ func (r *FlightRepositoryImpl) GetSpecificFlight(request entities.GetSpecificFli
 		&flight.Status,
 		&flight.Price,
 	)
+	return flight, err
+}
+
+// Helper function to scan multiple flight rows
+func scanFlightRows(rows *sql.Rows) ([]entities.Flight, error) {
+	var flights []entities.Flight
+	for rows.Next() {
+		var flight entities.Flight
+		err := rows.Scan(
+			&flight.FlightNumber,
+			&flight.DepartureAirport,
+			&flight.DestinationAirport,
+			&flight.DepartureDateTime,
+			&flight.ArrivalDateTime,
+			&flight.DepartureGateNumber,
+			&flight.DestinationGateNumber,
+			&flight.PlaneRegistration,
+			&flight.Status,
+			&flight.Price,
+		)
+		if err != nil {
+			log.Error().Err(err).Msg("Error scanning flight row")
+			return nil, err
+		}
+		flights = append(flights, flight)
+	}
+	if err := rows.Err(); err != nil {
+		log.Error().Err(err).Msg("Error iterating over flight rows")
+		return nil, err
+	}
+	return flights, nil
+}
+
+func (r *FlightRepositoryImpl) GetSpecificFlight(request entities.GetSpecificFlightRequest) (entities.Flight, error) {
+	log.Info().Str("flight_number", request.FlightNumber).Str("departure_datetime", request.DepartureDateTime).Msg("Getting flight by number and departure datetime")
+
+	query := `
+        SELECT flight_number, departure_airport, destination_airport, departure_datetime, arrival_datetime, 
+               departure_gate_number, destination_gate_number, plane_registration, status, price 
+        FROM flights 
+        WHERE flight_number = $1 AND departure_datetime = $2`
+	row := r.db.QueryRow(query, request.FlightNumber, request.DepartureDateTime)
+	flight, err := scanFlightRow(row)
 	if err != nil {
 		log.Error().Err(err).Str("flight_number", request.FlightNumber).Str("departure_datetime", request.DepartureDateTime).Msg("Error getting flight by number and departure datetime")
 		return entities.Flight{}, err
@@ -61,34 +96,7 @@ func (r *FlightRepositoryImpl) GetAllFlights() ([]entities.Flight, error) {
 	}
 	defer rows.Close()
 
-	var flights []entities.Flight
-	for rows.Next() {
-		var flight entities.Flight
-		err := rows.Scan(
-			&flight.FlightNumber,
-			&flight.DepartureAirport,
-			&flight.DestinationAirport,
-			&flight.DepartureDateTime,
-			&flight.ArrivalDateTime,
-			&flight.DepartureGateNumber,
-			&flight.DestinationGateNumber,
-			&flight.PlaneRegistration,
-			&flight.Status,
-			&flight.Price,
-		)
-		if err != nil {
-			log.Error().Err(err).Msg("Error scanning flight")
-			return nil, err
-		}
-		flights = append(flights, flight)
-	}
-
-	if err = rows.Err(); err != nil {
-		log.Error().Err(err).Msg("Error iterating over flight rows")
-		return nil, err
-	}
-
-	return flights, nil
+	return scanFlightRows(rows)
 }
 
 func (r *FlightRepositoryImpl) GetAllFlightsDestinationDateFlights(request entities.GetAllFlightsDestinationDateRequest) ([]entities.Flight, error) {
@@ -110,34 +118,7 @@ func (r *FlightRepositoryImpl) GetAllFlightsDestinationDateFlights(request entit
 	}
 	defer rows.Close()
 
-	var flights []entities.Flight
-	for rows.Next() {
-		var flight entities.Flight
-		err := rows.Scan(
-			&flight.FlightNumber,
-			&flight.DepartureAirport,
-			&flight.DestinationAirport,
-			&flight.DepartureDateTime,
-			&flight.ArrivalDateTime,
-			&flight.DepartureGateNumber,
-			&flight.DestinationGateNumber,
-			&flight.PlaneRegistration,
-			&flight.Status,
-			&flight.Price,
-		)
-		if err != nil {
-			log.Error().Err(err).Msg("Error scanning flight row")
-			return nil, err
-		}
-		flights = append(flights, flight)
-	}
-
-	if err = rows.Err(); err != nil {
-		log.Error().Err(err).Msg("Error iterating over flight rows")
-		return nil, err
-	}
-
-	return flights, nil
+	return scanFlightRows(rows)
 }
 
 func (r *FlightRepositoryImpl) GetAllActiveFlights() ([]entities.Flight, error) {
@@ -155,34 +136,7 @@ func (r *FlightRepositoryImpl) GetAllActiveFlights() ([]entities.Flight, error) 
 	}
 	defer rows.Close()
 
-	var flights []entities.Flight
-	for rows.Next() {
-		var flight entities.Flight
-		err := rows.Scan(
-			&flight.FlightNumber,
-			&flight.DepartureAirport,
-			&flight.DestinationAirport,
-			&flight.DepartureDateTime,
-			&flight.ArrivalDateTime,
-			&flight.DepartureGateNumber,
-			&flight.DestinationGateNumber,
-			&flight.PlaneRegistration,
-			&flight.Status,
-			&flight.Price,
-		)
-		if err != nil {
-			log.Error().Err(err).Msg("Error scanning flight row")
-			return nil, err
-		}
-		flights = append(flights, flight)
-	}
-
-	if err = rows.Err(); err != nil {
-		log.Error().Err(err).Msg("Error iterating over flight rows")
-		return nil, err
-	}
-
-	return flights, nil
+	return scanFlightRows(rows)
 }
 
 func (r *FlightRepositoryImpl) CancelFlight(request entities.CancelFlightRequest) error {

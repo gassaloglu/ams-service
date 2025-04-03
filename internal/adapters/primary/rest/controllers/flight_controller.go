@@ -31,10 +31,17 @@ func (c *FlightController) GetSpecificFlight(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
+	log.Info().Str("employee_id", userID).Msg("User attempting to get a specific flight")
+
 	flight, err := c.service.GetSpecificFlight(request, userID)
 	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			log.Info().Msg("No flight found")
+			return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "TODO:Flight not found"})
+		}
+
 		log.Error().Err(err).Msg("Error getting specific flight")
-		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error getting specific flight"})
+		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "TODO: Error getting specific flight"})
 	}
 
 	return ctx.Status(http.StatusOK).JSON(flight)
@@ -53,6 +60,11 @@ func (c *FlightController) GetAllFlights(ctx *fiber.Ctx) error {
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting all flights")
 		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error getting all flights"})
+	}
+
+	if len(flights) == 0 {
+		log.Info().Msg("No flights found")
+		return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "TODO: No flights available"})
 	}
 
 	return ctx.Status(http.StatusOK).JSON(flights)
@@ -79,6 +91,11 @@ func (c *FlightController) GetAllFlightsDestinationDateFlights(ctx *fiber.Ctx) e
 		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error getting specific flights"})
 	}
 
+	if len(flights) == 0 {
+		log.Info().Msg("No flights found")
+		return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "TODO: No flights available"})
+	}
+
 	return ctx.Status(http.StatusOK).JSON(flights)
 }
 
@@ -95,6 +112,11 @@ func (c *FlightController) GetAllActiveFlights(ctx *fiber.Ctx) error {
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting all active flights")
 		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error getting all active flights"})
+	}
+
+	if len(flights) == 0 {
+		log.Info().Msg("No active flights found")
+		return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "TODO: There are no active flights"})
 	}
 
 	return ctx.Status(http.StatusOK).JSON(flights)
@@ -117,7 +139,11 @@ func (c *FlightController) CancelFlight(ctx *fiber.Ctx) error {
 
 	err = c.service.CancelFlight(request)
 	if err != nil {
-		log.Error().Err(err).Msg("TODO: Error canceling flight")
+		if err.Error() == "sql: no rows in result set" {
+			log.Info().Msg("No flight found to cancel")
+			return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "TODO: No flight found to cancel"})
+		}
+		log.Error().Err(err).Msg("Error canceling flight")
 		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error canceling flight"})
 	}
 
