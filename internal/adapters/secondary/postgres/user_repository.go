@@ -5,6 +5,7 @@ import (
 	"ams-service/internal/ports/secondary"
 	"ams-service/internal/utils"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/rs/zerolog/log"
@@ -53,7 +54,7 @@ func (r *UserRepositoryImpl) RegisterUser(user entities.User) error {
 			Err(err).
 			Str("username", user.Username).
 			Msg("Error registering user")
-		return err
+		return fmt.Errorf("failed to register user: %w", err)
 	}
 
 	log.Info().
@@ -73,6 +74,27 @@ func (r *UserRepositoryImpl) LoginUser(username, password string) (*entities.Use
     `
 	row := r.db.QueryRow(query, username)
 
+	user, err := r.scanUser(row)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			log.Error().Str("username", username).Msg("User not found")
+			return nil, fmt.Errorf("user not found")
+		}
+		log.Error().Err(err).Str("username", username).Msg("Error retrieving user")
+		return nil, err
+	}
+
+	if err := r.verifyPassword(password, user); err != nil {
+		log.Error().Str("username", username).Msg(err.Error())
+		return nil, err
+	}
+
+	log.Info().Str("username", username).Msg("Successfully logged in user")
+	return user, nil
+}
+
+// Helper function to scan a user from a database row
+func (r *UserRepositoryImpl) scanUser(row *sql.Row) (*entities.User, error) {
 	var user entities.User
 	err := row.Scan(
 		&user.ID,
@@ -91,24 +113,19 @@ func (r *UserRepositoryImpl) LoginUser(username, password string) (*entities.Use
 		&user.LastPasswordChange,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			log.Error().Str("username", username).Msg("User not found")
-			return nil, fmt.Errorf("user not found")
-		}
-		log.Error().Err(err).Str("username", username).Msg("Error logging in user")
 		return nil, err
 	}
+	return &user, nil
+}
 
+// Helper function to verify a user's password
+func (r *UserRepositoryImpl) verifyPassword(password string, user *entities.User) error {
 	isValid, err := utils.VerifyPassword(password, user.PasswordHash, user.Salt)
 	if err != nil {
-		log.Error().Err(err).Str("username", username).Msg("Error verifying password")
-		return nil, err
+		return fmt.Errorf("error verifying password: %w", err)
 	}
 	if !isValid {
-		log.Error().Str("username", username).Msg("Invalid password")
-		return nil, fmt.Errorf("invalid password")
+		return fmt.Errorf("invalid password")
 	}
-
-	log.Info().Str("username", username).Msg("Successfully logged in user")
-	return &user, nil
+	return nil
 }

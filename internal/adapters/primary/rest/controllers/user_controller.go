@@ -17,43 +17,40 @@ func NewUserController(service primary.UserService) *UserController {
 	return &UserController{service: service}
 }
 
+// Helper function to handle errors and send JSON responses
+func respondWithError(ctx *fiber.Ctx, status int, message string, err error) error {
+	if err != nil {
+		log.Error().Err(err).Msg(message)
+	}
+	return ctx.Status(status).JSON(fiber.Map{"error": message})
+}
+
 func (c *UserController) RegisterUser(ctx *fiber.Ctx) error {
 	var user entities.User
 	if err := ctx.BodyParser(&user); err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"error": "Error binding JSON",
-		})
+		return respondWithError(ctx, http.StatusBadRequest, "Error binding JSON", err)
 	}
 
-	err := c.service.RegisterUser(user)
-	if err != nil {
-		log.Error().Err(err).Str("username", user.Username).Msg("Error registering user")
-		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Registration failed",
-		})
+	if err := c.service.RegisterUser(user); err != nil {
+		return respondWithError(ctx, http.StatusInternalServerError, "Registration failed", err)
 	}
 
 	log.Info().Str("username", user.Username).Msg("Successfully registered user")
-	return ctx.Status(http.StatusOK).JSON(fiber.Map{
-		"message": "Registration successful",
-	})
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Registration successful"})
 }
 
 func (c *UserController) LoginUser(ctx *fiber.Ctx) error {
 	var loginRequest entities.LoginRequest
 	if err := ctx.BodyParser(&loginRequest); err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return respondWithError(ctx, http.StatusBadRequest, "Error binding JSON", err)
 	}
 
 	user, token, err := c.service.LoginUser(loginRequest.Username, loginRequest.Password)
 	if err != nil {
-		return ctx.Status(http.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Invalid username or password",
-		})
+		return respondWithError(ctx, http.StatusUnauthorized, "Invalid username or password", err)
 	}
 
+	log.Info().Str("username", loginRequest.Username).Msg("Login successful")
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{
 		"message": "Login successful",
 		"token":   token,
