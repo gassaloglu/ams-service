@@ -25,37 +25,35 @@ func (c *FlightController) GetSpecificFlight(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid query parameters"})
 	}
 
-	userID, err := utils.ExtractUserIDFromToken(ctx)
+	userOrEmployeeID, err := utils.ExtractUserOrEmployeeID(ctx)
 	if err != nil {
-		log.Error().Err(err).Msg("Error extracting user ID from token")
-		return ctx.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+		log.Error().Err(err).Msg("Unauthorized access")
+		return ctx.Status(http.StatusForbidden).JSON(fiber.Map{"error": "Access denied"})
 	}
 
-	log.Info().Str("employee_id", userID).Msg("User attempting to get a specific flight")
-
-	flight, err := c.service.GetSpecificFlight(request, userID)
+	log.Info().Str("id", userOrEmployeeID).Msg("User/Employee attempting to get a specific flight")
+	flight, err := c.service.GetSpecificFlight(request, userOrEmployeeID)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
 			log.Info().Msg("No flight found")
-			return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "TODO:Flight not found"})
+			return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "Flight not found"})
 		}
-
 		log.Error().Err(err).Msg("Error getting specific flight")
-		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "TODO: Error getting specific flight"})
+		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error getting specific flight"})
 	}
 
 	return ctx.Status(http.StatusOK).JSON(flight)
 }
 
 func (c *FlightController) GetAllFlights(ctx *fiber.Ctx) error {
-	employeeID, err := utils.ExtractEmployeeIDFromToken(ctx)
+	allowedRoles := []string{"admin", "flight_planner", "passenger_services", "ground_services"}
+	role, err := utils.CheckRoleAuthorization(ctx, allowedRoles)
 	if err != nil {
-		log.Error().Err(err).Msg("Error extracting employee ID from token")
-		return ctx.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+		log.Error().Err(err).Msg("Unauthorized access")
+		return ctx.Status(http.StatusForbidden).JSON(fiber.Map{"error": "Access denied"})
 	}
 
-	log.Info().Str("employee_id", employeeID).Msg("Employee attempting to view all flights")
-
+	log.Info().Str("role", role).Msg("Authorized role attempting to view all flights")
 	flights, err := c.service.GetAllFlights()
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting all flights")
@@ -64,21 +62,19 @@ func (c *FlightController) GetAllFlights(ctx *fiber.Ctx) error {
 
 	if len(flights) == 0 {
 		log.Info().Msg("No flights found")
-		return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "TODO: No flights available"})
+		return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "No flights available"})
 	}
 
 	return ctx.Status(http.StatusOK).JSON(flights)
 }
 
 func (c *FlightController) GetAllFlightsDestinationDateFlights(ctx *fiber.Ctx) error {
-	userID, err := utils.ExtractIDFromToken(ctx, "user_id")
+	userOrEmployeeID, err := utils.ExtractUserOrEmployeeID(ctx)
 	if err != nil {
-		log.Error().Err(err).Msg("Error extracting user ID from token")
-		return ctx.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+		return err
 	}
 
-	log.Info().Str("user_id", userID).Msg("User attempting to view specific flights")
-
+	log.Info().Str("id", userOrEmployeeID).Msg("User/Employee attempting to view specific flights")
 	var request entities.GetAllFlightsDestinationDateRequest
 	if err := ctx.QueryParser(&request); err != nil {
 		log.Error().Err(err).Msg("Error binding query parameters")
@@ -93,21 +89,21 @@ func (c *FlightController) GetAllFlightsDestinationDateFlights(ctx *fiber.Ctx) e
 
 	if len(flights) == 0 {
 		log.Info().Msg("No flights found")
-		return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "TODO: No flights available"})
+		return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "No flights available"})
 	}
 
 	return ctx.Status(http.StatusOK).JSON(flights)
 }
 
 func (c *FlightController) GetAllActiveFlights(ctx *fiber.Ctx) error {
-	employeeID, err := utils.ExtractIDFromToken(ctx, "employee_id")
+	allowedRoles := []string{"admin", "flight_planner", "passenger_services", "ground_services"}
+	role, err := utils.CheckRoleAuthorization(ctx, allowedRoles)
 	if err != nil {
-		log.Error().Err(err).Msg("Error extracting employee ID from token")
-		return ctx.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+		log.Error().Err(err).Msg("Unauthorized access")
+		return ctx.Status(http.StatusForbidden).JSON(fiber.Map{"error": "Access denied"})
 	}
 
-	log.Info().Str("employee_id", employeeID).Msg("Employee attempting to view all active flights")
-
+	log.Info().Str("role", role).Msg("Authorized role attempting to view all active flights")
 	flights, err := c.service.GetAllActiveFlights()
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting all active flights")
@@ -116,21 +112,21 @@ func (c *FlightController) GetAllActiveFlights(ctx *fiber.Ctx) error {
 
 	if len(flights) == 0 {
 		log.Info().Msg("No active flights found")
-		return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "TODO: There are no active flights"})
+		return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "There are no active flights"})
 	}
 
 	return ctx.Status(http.StatusOK).JSON(flights)
 }
 
 func (c *FlightController) CancelFlight(ctx *fiber.Ctx) error {
-	employeeID, err := utils.ExtractIDFromToken(ctx, "employee_id")
+	allowedRoles := []string{"admin", "flight_planner"}
+	role, err := utils.CheckRoleAuthorization(ctx, allowedRoles)
 	if err != nil {
-		log.Error().Err(err).Msg("Error extracting employee ID from token")
-		return ctx.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+		log.Error().Err(err).Msg("Unauthorized access")
+		return ctx.Status(http.StatusForbidden).JSON(fiber.Map{"error": "Access denied"})
 	}
 
-	log.Info().Str("employee_id", employeeID).Msg("Employee attempting to cancel a flight")
-
+	log.Info().Str("role", role).Msg("Authorized role attempting to cancel a flight")
 	var request entities.CancelFlightRequest
 	if err := ctx.BodyParser(&request); err != nil {
 		log.Error().Err(err).Msg("Error binding JSON")
@@ -141,11 +137,44 @@ func (c *FlightController) CancelFlight(ctx *fiber.Ctx) error {
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
 			log.Info().Msg("No flight found to cancel")
-			return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "TODO: No flight found to cancel"})
+			return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"message": "No flight found to cancel"})
 		}
 		log.Error().Err(err).Msg("Error canceling flight")
 		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error canceling flight"})
 	}
 
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Flight canceled successfully"})
+}
+
+func (c *FlightController) AddFlight(ctx *fiber.Ctx) error {
+	// Check if the user is authorized with the required roles
+	allowedRoles := []string{"admin", "flight_planner"}
+	role, err := utils.CheckRoleAuthorization(ctx, allowedRoles)
+	if err != nil {
+		log.Error().Err(err).Msg("Unauthorized access")
+		return ctx.Status(http.StatusForbidden).JSON(fiber.Map{"error": "Access denied"})
+	}
+
+	log.Info().Str("role", role).Msg("Authorized role attempting to add a flight")
+
+	// Parse the request body
+	var request entities.AddFlightRequest
+	if err := ctx.BodyParser(&request); err != nil {
+		log.Error().Err(err).Msg("Error binding JSON")
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
+	}
+
+	// Call the service to add the flight
+	err = c.service.AddFlight(request)
+	if err != nil {
+		if err.Error() == "pq: insert or update on table \"flights\" violates foreign key constraint \"fk_plane_registration\"" {
+			log.Error().Err(err).Msg("Foreign key constraint violation")
+			return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid plane registration"})
+		}
+		log.Error().Err(err).Msg("Error adding flight")
+		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error adding flight"})
+	}
+
+	log.Info().Msg("Successfully added flight")
+	return ctx.Status(http.StatusCreated).JSON(fiber.Map{"message": "Flight added successfully"})
 }

@@ -76,6 +76,7 @@ func (s *EmployeeServiceImpl) LoginEmployee(employeeID, password string) (*entit
 func generateEmployeeJWTToken(employee *entities.Employee) (string, error) {
 	claims := jwt.MapClaims{
 		"employee_id": employee.ID,
+		"role":        employee.Role,
 		"exp":         time.Now().Add(EmployeeTokenExpiryDuration).Unix(),
 	}
 

@@ -162,3 +162,32 @@ func (r *FlightRepositoryImpl) CancelFlight(request entities.CancelFlightRequest
 
 	return nil
 }
+
+func (r *FlightRepositoryImpl) AddFlight(request entities.AddFlightRequest) error {
+	log.Info().Str("flight_number", request.Flight.FlightNumber).Msg("Adding new flight")
+
+	query := `
+        INSERT INTO flights (
+            flight_number, departure_airport, destination_airport, departure_datetime, arrival_datetime,
+            departure_gate_number, destination_gate_number, plane_registration, status, price
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    `
+	_, err := r.db.Exec(
+		query,
+		request.Flight.FlightNumber,
+		request.Flight.DepartureAirport,
+		request.Flight.DestinationAirport,
+		request.Flight.DepartureDateTime,
+		request.Flight.ArrivalDateTime,
+		request.Flight.DepartureGateNumber,
+		request.Flight.DestinationGateNumber,
+		request.Flight.PlaneRegistration,
+		request.Flight.Status,
+		request.Flight.Price,
+	)
+	if err != nil {
+		log.Error().Err(err).Msg("Error adding flight")
+		return err
+	}
+	return nil
+}
