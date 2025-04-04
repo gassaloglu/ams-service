@@ -101,3 +101,7 @@ type CancelFlightRequest struct {
 type GetEmployeeByIdRequest struct {
 	EmployeeID string `json:"employee_id" binding:"required"`
 }
+
+type AddFlightRequest struct {
+	Flight Flight `json:"flight" binding:"required"`
+}

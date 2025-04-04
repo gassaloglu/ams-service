@@ -9,5 +9,6 @@ type FlightRepository interface {
 	GetAllFlights() ([]entities.Flight, error)
 	GetAllFlightsDestinationDateFlights(request entities.GetAllFlightsDestinationDateRequest) ([]entities.Flight, error)
 	GetAllActiveFlights() ([]entities.Flight, error)
-	CancelFlight(request entities.CancelFlightRequest) error // New method
+	CancelFlight(request entities.CancelFlightRequest) error
+	AddFlight(request entities.AddFlightRequest) error
 }

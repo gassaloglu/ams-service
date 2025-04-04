@@ -65,3 +65,13 @@ func (s *FlightService) CancelFlight(request entities.CancelFlightRequest) error
 	log.Info().Str("flight_number", request.FlightNumber).Msg("Successfully canceled flight")
 	return nil
 }
+
+func (s *FlightService) AddFlight(request entities.AddFlightRequest) error {
+	err := s.repo.AddFlight(request)
+	if err != nil {
+		log.Error().Err(err).Msg("Error adding flight")
+		return err
+	}
+	log.Info().Msg("Successfully added flight")
+	return nil
+}

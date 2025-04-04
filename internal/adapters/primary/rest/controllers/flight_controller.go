@@ -145,3 +145,36 @@ func (c *FlightController) CancelFlight(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Flight canceled successfully"})
 }
+
+func (c *FlightController) AddFlight(ctx *fiber.Ctx) error {
+	// Check if the user is authorized with the required roles
+	allowedRoles := []string{"admin", "flight_planner"}
+	role, err := utils.CheckRoleAuthorization(ctx, allowedRoles)
+	if err != nil {
+		log.Error().Err(err).Msg("Unauthorized access")
+		return ctx.Status(http.StatusForbidden).JSON(fiber.Map{"error": "Access denied"})
+	}
+
+	log.Info().Str("role", role).Msg("Authorized role attempting to add a flight")
+
+	// Parse the request body
+	var request entities.AddFlightRequest
+	if err := ctx.BodyParser(&request); err != nil {
+		log.Error().Err(err).Msg("Error binding JSON")
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
+	}
+
+	// Call the service to add the flight
+	err = c.service.AddFlight(request)
+	if err != nil {
+		if err.Error() == "pq: insert or update on table \"flights\" violates foreign key constraint \"fk_plane_registration\"" {
+			log.Error().Err(err).Msg("Foreign key constraint violation")
+			return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid plane registration"})
+		}
+		log.Error().Err(err).Msg("Error adding flight")
+		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error adding flight"})
+	}
+
+	log.Info().Msg("Successfully added flight")
+	return ctx.Status(http.StatusCreated).JSON(fiber.Map{"message": "Flight added successfully"})
+}
