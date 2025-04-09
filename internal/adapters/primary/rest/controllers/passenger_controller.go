@@ -102,3 +102,25 @@ func (c *PassengerController) GetAllPassengers(ctx *fiber.Ctx) error {
 	}
 	return ctx.Status(http.StatusOK).JSON(passengers)
 }
+
+func (c *PassengerController) EmployeeCheckInPassenger(ctx *fiber.Ctx) error {
+	var request entities.EmployeeCheckInRequest
+	if err := ctx.BodyParser(&request); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	passenger, err := c.service.EmployeeCheckInPassenger(request)
+	if err != nil {
+		log.Error().Err(err).
+			Str("national_id", request.NationalId).
+			Str("destination_airport", request.DestinationAirport).
+			Msg("Error checking in passenger")
+		return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"error": "Passenger not found or check-in failed"})
+	}
+
+	log.Info().
+		Str("national_id", request.NationalId).
+		Str("destination_airport", request.DestinationAirport).
+		Msg("Successfully checked in passenger")
+	return ctx.Status(http.StatusOK).JSON(passenger)
+}

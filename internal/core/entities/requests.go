@@ -1,12 +1,16 @@
 package entities
 
+import (
+	"time"
+)
+
 type GetPassengerByIdRequest struct {
-	NationalId string `form:"national_id" binding:"required,len=11,numeric"`
+	NationalId string `query:"national_id" binding:"required,len=11,numeric"`
 }
 
 type GetPassengerByPnrRequest struct {
-	PNR     string `form:"pnr" binding:"required,len=6,alphanum"`
-	Surname string `form:"surname" binding:"required,alpha,min=2,max=50"`
+	PNR     string `query:"pnr" binding:"required,len=6,alphanum"`
+	Surname string `query:"surname" binding:"required,alpha,min=2,max=50"`
 }
 
 type OnlineCheckInRequest struct {
@@ -14,37 +18,38 @@ type OnlineCheckInRequest struct {
 	Surname string `json:"surname" binding:"alpha,min=2,max=50"`
 }
 
-// Will be updated(needs work)
 type EmployeeCheckInRequest struct {
-	PNR     string `json:"pnr" binding:"len=6,alphanum"`
-	Surname string `json:"surname" binding:"alpha,min=2,max=50"`
+	NationalId         string `json:"national_id" binding:"required,len=11,numeric"`
+	DestinationAirport string `json:"destination_airport" binding:"required,len=3,alpha"`
 }
 
 type GetPassengersBySpecificFlightRequest struct {
-	FlightNumber      string `form:"flight_number" binding:"required,len=6,alphanum"`
-	DepartureDateTime string `form:"departure_datetime" binding:"required,datetime=2006-01-02"`
+	FlightNumber      string `query:"flight_number" binding:"required,len=6,alphanum"`
+	DepartureDateTime string `query:"departure_datetime" binding:"required,datetime=2006-01-02"`
 }
 
 type CreatePassengerRequest struct {
-	NationalId       string `json:"national_id" binding:"required,len=11,numeric"`
-	PnrNo            string `json:"pnr_no" binding:"required,len=6,alphanum"`
-	BaggageAllowance int    `json:"baggage_allowance" binding:"required"`
-	BaggageId        string `json:"baggage_id" binding:"required"`
-	FareType         string `json:"fare_type" binding:"required"`
-	Seat             string `json:"seat" binding:"required"`
-	Meal             string `json:"meal" binding:"required"`
-	ExtraBaggage     int    `json:"extra_baggage" binding:"required"`
-	CheckIn          bool   `json:"check_in"`
-	Name             string `json:"name" binding:"required"`
-	Surname          string `json:"surname" binding:"required"`
-	Email            string `json:"email" binding:"required,email"`
-	Phone            string `json:"phone" binding:"required,len=10,numeric"`
-	Gender           string `json:"gender" binding:"required"`
-	BirthDate        string `json:"birth_date"`
-	CipMember        bool   `json:"cip_member"`
-	VipMember        bool   `json:"vip_member"`
-	Disabled         bool   `json:"disabled"`
-	Child            bool   `json:"child"`
+	NationalId       string    `json:"national_id" binding:"required,len=11,numeric"`
+	PnrNo            string    `json:"pnr_no" binding:"required,len=6,alphanum"`
+	FlightId         int       `json:"flight_id" binding:"required"`
+	PaymentId        int       `json:"payment_id" binding:"required"`
+	BaggageAllowance int       `json:"baggage_allowance" binding:"required"`
+	BaggageId        string    `json:"baggage_id" binding:"required"`
+	FareType         string    `json:"fare_type" binding:"required"`
+	Seat             int       `json:"seat"`
+	Meal             string    `json:"meal" binding:"required"`
+	ExtraBaggage     int       `json:"extra_baggage" binding:"required"`
+	CheckIn          bool      `json:"check_in"`
+	Name             string    `json:"name" binding:"required"`
+	Surname          string    `json:"surname" binding:"required"`
+	Email            string    `json:"email" binding:"required,email"`
+	Phone            string    `json:"phone" binding:"required,len=15,numeric"`
+	Gender           string    `json:"gender" binding:"required"`
+	BirthDate        time.Time `json:"birth_date"`
+	CipMember        bool      `json:"cip_member"`
+	VipMember        bool      `json:"vip_member"`
+	Disabled         bool      `json:"disabled"`
+	Child            bool      `json:"child"`
 }
 
 type RegisterEmployeeRequest struct {
@@ -61,7 +66,7 @@ type SetPlaneStatusRequest struct {
 }
 
 type GetPlaneByRegistrationRequest struct {
-	PlaneRegistration string `form:"registration_code" binding:"required"`
+	PlaneRegistration string `query:"registration_code" binding:"required"`
 }
 
 type GetPlaneByFlightNumberRequest struct {

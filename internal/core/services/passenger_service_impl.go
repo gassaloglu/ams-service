@@ -75,3 +75,19 @@ func (s *PassengerService) GetAllPassengers() ([]entities.Passenger, error) {
 	log.Info().Msg("Successfully retrieved all passengers")
 	return passengers, nil
 }
+
+func (s *PassengerService) EmployeeCheckInPassenger(request entities.EmployeeCheckInRequest) (entities.Passenger, error) {
+	passenger, err := s.repo.EmployeeCheckInPassenger(request)
+	if err != nil {
+		log.Error().Err(err).
+			Str("national_id", request.NationalId).
+			Str("destination_airport", request.DestinationAirport).
+			Msg("Error checking in passenger")
+		return entities.Passenger{}, err
+	}
+	log.Info().
+		Str("national_id", request.NationalId).
+		Str("destination_airport", request.DestinationAirport).
+		Msg("Successfully checked in passenger")
+	return passenger, nil
+}

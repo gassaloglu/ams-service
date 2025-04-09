@@ -69,9 +69,9 @@ CREATE TABLE IF NOT EXISTS employees (
     emergency_phone VARCHAR(15),
     profile_image_url VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\
-    password_hash TEXT NOT NULL\
-    salt TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    password_hash TEXT NOT NULL,
+    salt TEXT NOT NULL
 );
 
 -- Flights table
@@ -182,10 +182,6 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Create foreign key constraints
-ALTER TABLE employees
-    ADD CONSTRAINT fk_manager
-    FOREIGN KEY (manager_id) REFERENCES employees(id)
-    ON DELETE SET NULL;
 
 ALTER TABLE flights
     ADD CONSTRAINT fk_plane_registration
