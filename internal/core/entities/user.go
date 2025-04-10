@@ -15,7 +15,6 @@ type User struct {
 	Phone              string    `json:"phone" gorm:"size:15"`
 	Gender             string    `json:"gender" gorm:"type:gender_enum;not null"`
 	BirthDate          time.Time `json:"birth_date" gorm:"not null"`
-	Role               string    `json:"role" gorm:"type:role_enum;default:'user';not null"`
 	LastLogin          time.Time `json:"last_login"`
 	CreatedAt          time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt          time.Time `json:"updated_at" gorm:"autoUpdateTime"`

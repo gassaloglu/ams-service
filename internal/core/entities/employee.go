@@ -19,7 +19,6 @@ type Employee struct {
 	Role             string    `json:"role" gorm:"type:role_enum;not null"`
 	Salary           float64   `json:"salary" gorm:"type:decimal(10,2);not null"`
 	Status           string    `json:"status" gorm:"type:status_enum;default:'active';not null"`
-	ManagerID        *uint     `json:"manager_id" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
 	EmergencyContact string    `json:"emergency_contact" gorm:"type:varchar(100)"`
 	EmergencyPhone   string    `json:"emergency_phone" gorm:"type:varchar(15)"`
 	ProfileImageURL  string    `json:"profile_image_url" gorm:"type:varchar(255)"`
