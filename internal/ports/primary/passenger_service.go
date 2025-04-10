@@ -11,4 +11,5 @@ type PassengerService interface {
 	GetPassengersBySpecificFlight(request entities.GetPassengersBySpecificFlightRequest) ([]entities.Passenger, error)
 	CreatePassenger(request entities.CreatePassengerRequest) error
 	GetAllPassengers() ([]entities.Passenger, error)
+	EmployeeCheckInPassenger(request entities.EmployeeCheckInRequest) (entities.Passenger, error)
 }

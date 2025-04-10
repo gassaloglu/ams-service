@@ -18,7 +18,7 @@ func NewPassengerRepositoryImpl(db *sql.DB) secondary.PassengerRepository {
 
 func (r *PassengerRepositoryImpl) GetPassengerByID(request entities.GetPassengerByIdRequest) (entities.Passenger, error) {
 	log.Info().Str("national_id", request.NationalId).Msg("Querying passenger by ID")
-	query := `SELECT * FROM passengers WHERE national_id = $1`
+	query := `SELECT id, national_id, pnr_no, flight_id, payment_id, baggage_allowance, baggage_id, fare_type, seat, meal, extra_baggage, check_in, name, surname, email, phone, gender, birth_date, cip_member, vip_member, disabled, child, created_at, updated_at FROM passengers WHERE national_id = $1`
 	row := r.db.QueryRow(query, request.NationalId)
 
 	var passenger entities.Passenger
@@ -26,6 +26,8 @@ func (r *PassengerRepositoryImpl) GetPassengerByID(request entities.GetPassenger
 		&passenger.ID,
 		&passenger.NationalId,
 		&passenger.PnrNo,
+		&passenger.FlightId,
+		&passenger.PaymentId,
 		&passenger.BaggageAllowance,
 		&passenger.BaggageId,
 		&passenger.FareType,
@@ -56,7 +58,7 @@ func (r *PassengerRepositoryImpl) GetPassengerByID(request entities.GetPassenger
 
 func (r *PassengerRepositoryImpl) GetPassengerByPNR(request entities.GetPassengerByPnrRequest) (entities.Passenger, error) {
 	log.Info().Str("pnr", request.PNR).Str("surname", request.Surname).Msg("Querying passenger by PNR")
-	query := `SELECT * FROM passengers WHERE pnr_no = $1 AND surname = $2`
+	query := `SELECT id, national_id, pnr_no, flight_id, payment_id, baggage_allowance, baggage_id, fare_type, seat, meal, extra_baggage, check_in, name, surname, email, phone, gender, birth_date, cip_member, vip_member, disabled, child, created_at, updated_at FROM passengers WHERE pnr_no = $1 AND surname = $2`
 	row := r.db.QueryRow(query, request.PNR, request.Surname)
 
 	var passenger entities.Passenger
@@ -64,6 +66,8 @@ func (r *PassengerRepositoryImpl) GetPassengerByPNR(request entities.GetPassenge
 		&passenger.ID,
 		&passenger.NationalId,
 		&passenger.PnrNo,
+		&passenger.FlightId,
+		&passenger.PaymentId,
 		&passenger.BaggageAllowance,
 		&passenger.BaggageId,
 		&passenger.FareType,
@@ -107,13 +111,25 @@ func (r *PassengerRepositoryImpl) OnlineCheckInPassenger(request entities.Online
 func (r *PassengerRepositoryImpl) GetPassengersBySpecificFlight(request entities.GetPassengersBySpecificFlightRequest) ([]entities.Passenger, error) {
 	log.Info().Str("flight_number", request.FlightNumber).Msg("Querying passengers by specific flight")
 
-	query := `
-        SELECT national_id, pnr_no, baggage_allowance, baggage_id, fare_type, seat, meal, extra_baggage, check_in, name, surname, email, phone, gender, birth_date, cip_member, vip_member, disabled, child
+	query := `SELECT id from flights WHERE flight_number = $1 AND departure_datetime::date = $2`
+	row := r.db.QueryRow(query, request.FlightNumber, request.DepartureDateTime)
+
+	var flight entities.Flight
+	err := row.Scan(
+		&flight.ID,
+	)
+	if err != nil {
+		log.Error().Err(err).Str("flight_number", request.FlightNumber).Msg("Error querying flight by flight number and departure datetime")
+		return nil, err
+	}
+
+	query = `
+        SELECT id, national_id, pnr_no, flight_id, payment_id, baggage_allowance, baggage_id, fare_type, seat, meal, extra_baggage, check_in, name, surname, email, phone, gender, birth_date, cip_member, vip_member, disabled, child, created_at, updated_at
         FROM passengers
-        WHERE flight_number = $1
+        WHERE flight_id = $1
     `
 
-	rows, err := r.db.Query(query, request.FlightNumber)
+	rows, err := r.db.Query(query, flight.ID)
 	if err != nil {
 		log.Error().Err(err).Str("flight_number", request.FlightNumber).Msg("Error querying passengers by specific flight")
 		return nil, err
@@ -124,8 +140,11 @@ func (r *PassengerRepositoryImpl) GetPassengersBySpecificFlight(request entities
 	for rows.Next() {
 		var passenger entities.Passenger
 		err := rows.Scan(
+			&passenger.ID,
 			&passenger.NationalId,
 			&passenger.PnrNo,
+			&passenger.FlightId,
+			&passenger.PaymentId,
 			&passenger.BaggageAllowance,
 			&passenger.BaggageId,
 			&passenger.FareType,
@@ -143,6 +162,8 @@ func (r *PassengerRepositoryImpl) GetPassengersBySpecificFlight(request entities
 			&passenger.VipMember,
 			&passenger.Disabled,
 			&passenger.Child,
+			&passenger.CreatedAt,
+			&passenger.UpdatedAt,
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("Error scanning passenger row")
@@ -164,14 +185,16 @@ func (r *PassengerRepositoryImpl) CreatePassenger(request entities.CreatePasseng
 
 	query := `
         INSERT INTO passengers (
-            national_id, pnr_no, baggage_allowance, baggage_id, fare_type, seat, meal, extra_baggage, check_in, name, surname, email, phone, gender, birth_date, cip_member, vip_member, disabled, child
+            national_id, pnr_no, flight_id, payment_id, baggage_allowance, baggage_id, fare_type, seat, meal, extra_baggage, check_in, name, surname, email, phone, gender, birth_date, cip_member, vip_member, disabled, child
         ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
         )
     `
 	_, err := r.db.Exec(query,
 		request.NationalId,
 		request.PnrNo,
+		request.FlightId,
+		request.PaymentId,
 		request.BaggageAllowance,
 		request.BaggageId,
 		request.FareType,
@@ -201,7 +224,7 @@ func (r *PassengerRepositoryImpl) GetAllPassengers() ([]entities.Passenger, erro
 	log.Info().Msg("Retrieving all passengers")
 
 	query := `
-        SELECT national_id, pnr_no, baggage_allowance, baggage_id, fare_type, seat, meal, extra_baggage, check_in, name, surname, email, phone, gender, birth_date, cip_member, vip_member, disabled, child
+        SELECT id, national_id, pnr_no, flight_id, payment_id, baggage_allowance, baggage_id, fare_type, seat, meal, extra_baggage, check_in, name, surname, email, phone, gender, birth_date, cip_member, vip_member, disabled, child, created_at, updated_at
         FROM passengers
     `
 
@@ -216,8 +239,11 @@ func (r *PassengerRepositoryImpl) GetAllPassengers() ([]entities.Passenger, erro
 	for rows.Next() {
 		var passenger entities.Passenger
 		err := rows.Scan(
+			&passenger.ID,
 			&passenger.NationalId,
 			&passenger.PnrNo,
+			&passenger.FlightId,
+			&passenger.PaymentId,
 			&passenger.BaggageAllowance,
 			&passenger.BaggageId,
 			&passenger.FareType,
@@ -235,6 +261,8 @@ func (r *PassengerRepositoryImpl) GetAllPassengers() ([]entities.Passenger, erro
 			&passenger.VipMember,
 			&passenger.Disabled,
 			&passenger.Child,
+			&passenger.CreatedAt,
+			&passenger.UpdatedAt,
 		)
 		if err != nil {
 			log.Error().Err(err).Msg("Error scanning passenger row")
@@ -249,4 +277,72 @@ func (r *PassengerRepositoryImpl) GetAllPassengers() ([]entities.Passenger, erro
 	}
 
 	return passengers, nil
+}
+
+func (r *PassengerRepositoryImpl) EmployeeCheckInPassenger(request entities.EmployeeCheckInRequest) (entities.Passenger, error) {
+	log.Info().
+		Str("national_id", request.NationalId).
+		Str("destination_airport", request.DestinationAirport).
+		Msg("Employee checking in passenger")
+
+	query := `
+        SELECT p.id, p.national_id, p.pnr_no, p.flight_id, p.payment_id, 
+               p.baggage_allowance, p.baggage_id, p.fare_type, p.seat, p.meal, 
+               p.extra_baggage, p.check_in, p.name, p.surname, p.email, p.phone, 
+               p.gender, p.birth_date, p.cip_member, p.vip_member, p.disabled, 
+               p.child, p.created_at, p.updated_at
+        FROM passengers p
+        JOIN flights f ON p.flight_id = f.id
+        WHERE p.national_id = $1 
+        AND f.destination_airport = $2
+        LIMIT 1`
+
+	row := r.db.QueryRow(query, request.NationalId, request.DestinationAirport)
+
+	var passenger entities.Passenger
+	err := row.Scan(
+		&passenger.ID,
+		&passenger.NationalId,
+		&passenger.PnrNo,
+		&passenger.FlightId,
+		&passenger.PaymentId,
+		&passenger.BaggageAllowance,
+		&passenger.BaggageId,
+		&passenger.FareType,
+		&passenger.Seat,
+		&passenger.Meal,
+		&passenger.ExtraBaggage,
+		&passenger.CheckIn,
+		&passenger.Name,
+		&passenger.Surname,
+		&passenger.Email,
+		&passenger.Phone,
+		&passenger.Gender,
+		&passenger.BirthDate,
+		&passenger.CipMember,
+		&passenger.VipMember,
+		&passenger.Disabled,
+		&passenger.Child,
+		&passenger.CreatedAt,
+		&passenger.UpdatedAt,
+	)
+	if err != nil {
+		log.Error().Err(err).
+			Str("national_id", request.NationalId).
+			Str("destination_airport", request.DestinationAirport).
+			Msg("Error finding passenger for employee check-in")
+		return entities.Passenger{}, err
+	}
+
+	// Update check-in status
+	updateQuery := `UPDATE passengers SET check_in = true WHERE id = $1`
+	_, err = r.db.Exec(updateQuery, passenger.ID)
+	if err != nil {
+		log.Error().Err(err).
+			Str("passenger_id", passenger.ID).
+			Msg("Error updating passenger check-in status")
+		return entities.Passenger{}, err
+	}
+
+	return passenger, nil
 }

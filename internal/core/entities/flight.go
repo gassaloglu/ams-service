@@ -5,10 +5,11 @@ import (
 )
 
 type Flight struct {
-	FlightNumber          string    `json:"flight_number" gorm:"primaryKey;size:10;not null"`
+	ID                    uint      `json:"id" gorm:"primaryKey;autoIncrement"`
+	FlightNumber          string    `json:"flight_number" gorm:"size:10;not null;"`
 	DepartureAirport      string    `json:"departure_airport" gorm:"size:3;not null"`
 	DestinationAirport    string    `json:"destination_airport" gorm:"size:3;not null"`
-	DepartureDateTime     time.Time `json:"departure_datetime" gorm:"not null"`
+	DepartureDateTime     time.Time `json:"departure_datetime" gorm:"not null;"`
 	ArrivalDateTime       time.Time `json:"arrival_datetime" gorm:"not null"`
 	DepartureGateNumber   string    `json:"departure_gate_number" gorm:"size:5"`
 	DestinationGateNumber string    `json:"destination_gate_number" gorm:"size:5"`
