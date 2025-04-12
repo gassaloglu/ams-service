@@ -3,7 +3,7 @@ package entities
 import "time"
 
 type Passenger struct {
-	ID               string    `json:"id" gorm:"primaryKey;autoIncrement"`
+	ID               uint      `json:"id" gorm:"primaryKey;autoIncrement"`
 	NationalId       string    `json:"national_id" gorm:"size:11;not null"`
 	PnrNo            string    `json:"pnr_no" gorm:"size:6;unique;not null"`
 	FlightId         int       `json:"flight_id" gorm:"not null"`

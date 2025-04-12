@@ -4,6 +4,7 @@ import (
 	"ams-service/internal/core/entities"
 	"ams-service/internal/ports/secondary"
 	"database/sql"
+	"fmt"
 
 	"github.com/rs/zerolog/log"
 )
@@ -339,7 +340,7 @@ func (r *PassengerRepositoryImpl) EmployeeCheckInPassenger(request entities.Empl
 	_, err = r.db.Exec(updateQuery, passenger.ID)
 	if err != nil {
 		log.Error().Err(err).
-			Str("passenger_id", passenger.ID).
+			Str("passenger_id", fmt.Sprintf("%d", passenger.ID)).
 			Msg("Error updating passenger check-in status")
 		return entities.Passenger{}, err
 	}

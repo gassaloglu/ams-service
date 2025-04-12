@@ -30,7 +30,7 @@ func (r *PlaneRepositoryImpl) GetAllPlanes() ([]entities.Plane, error) {
 	// Loop through rows, using Scan to assign column data to struct fields.
 	for rows.Next() {
 		var plane entities.Plane
-		err := rows.Scan(&plane.PlaneRegistration, &plane.PlaneType, &plane.Location, &plane.TotalPassengers, &plane.MaxPassengers, &plane.EconomyPassengers, &plane.BusinessPassengers, &plane.FirstClassPassengers, &plane.FlightNumber, &plane.IsAvailable)
+		err := rows.Scan(&plane.Registration, &plane.Model, &plane.Manufacturer, &plane.Capacity, &plane.Status, &plane.CreatedAt, &plane.UpdatedAt)
 		if err != nil {
 			return planes, err
 		}
@@ -44,36 +44,32 @@ func (r *PlaneRepositoryImpl) GetAllPlanes() ([]entities.Plane, error) {
 
 func (r *PlaneRepositoryImpl) AddPlane(request entities.AddPlaneRequest) error {
 	// Check whether there are any planes that has same registration number
-	getByRegistrationInput := entities.GetPlaneByRegistrationRequest{PlaneRegistration: request.Plane.PlaneRegistration}
+	getByRegistrationInput := entities.GetPlaneByRegistrationRequest{PlaneRegistration: request.Plane.Registration}
 	existedPlane, err := r.GetPlaneByRegistration(getByRegistrationInput)
 	var plane entities.Plane
 	if existedPlane != plane {
-		log.Info().Str("registration", request.Plane.PlaneRegistration).Msg("Plane with the registration already exists")
+		log.Info().Str("registration", request.Plane.Registration).Msg("Plane with the registration already exists")
 		return err
 	}
-	log.Info().Str("registration", request.Plane.PlaneRegistration).Msg("Adding new plane")
+	log.Info().Str("registration", request.Plane.Registration).Msg("Adding new plane")
 
 	query := `
 			INSERT INTO planes (
-				plane_registration, plane_type, location, total_passengers, max_passengers,
-				economy_passengers, business_passengers, first_class_passengers, flight_number, is_available
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+				registration, model, manufacturer, capacity, status, created_at, updated_at
+			) VALUES ($1, $2, $3, $4, $5, $6, $7)
 		`
 	_, err = r.db.Exec(
 		query,
-		request.Plane.PlaneRegistration,
-		request.Plane.PlaneType,
-		request.Plane.Location,
-		request.Plane.TotalPassengers,
-		request.Plane.MaxPassengers,
-		request.Plane.EconomyPassengers,
-		request.Plane.BusinessPassengers,
-		request.Plane.FirstClassPassengers,
-		request.Plane.FlightNumber,
-		request.Plane.IsAvailable,
+		request.Plane.Registration,
+		request.Plane.Model,
+		request.Plane.Manufacturer,
+		request.Plane.Capacity,
+		request.Plane.Status,
+		request.Plane.CreatedAt,
+		request.Plane.UpdatedAt,
 	)
 	if err != nil {
-		log.Error().Err(err).Str("registration", request.Plane.PlaneRegistration).Msg("Error adding plane")
+		log.Error().Err(err).Str("registration", request.Plane.Registration).Msg("Error adding plane")
 		return err
 	}
 	return nil
@@ -82,7 +78,7 @@ func (r *PlaneRepositoryImpl) AddPlane(request entities.AddPlaneRequest) error {
 func (r *PlaneRepositoryImpl) SetPlaneStatus(request entities.SetPlaneStatusRequest) error {
 	log.Info().Str("registration", request.PlaneRegistration).Bool("is_available", request.IsAvailable).Msg("Setting plane status")
 
-	query := "UPDATE planes SET is_available = $1 WHERE plane_registration = $2"
+	query := "UPDATE planes SET status = $1 WHERE registration = $2"
 	_, err := r.db.Exec(query, request.IsAvailable, request.PlaneRegistration)
 	if err != nil {
 		log.Error().Err(err).Str("registration", request.PlaneRegistration).Msg("Error updating plane status")
@@ -94,12 +90,12 @@ func (r *PlaneRepositoryImpl) SetPlaneStatus(request entities.SetPlaneStatusRequ
 func (r *PlaneRepositoryImpl) GetPlaneByRegistration(request entities.GetPlaneByRegistrationRequest) (entities.Plane, error) {
 	log.Info().Str("registration", request.PlaneRegistration).Msg("Querying plane by registration")
 
-	query := "SELECT * FROM planes WHERE plane_registration = $1"
+	query := "SELECT * FROM planes WHERE registration = $1"
 	row := r.db.QueryRow(query, request.PlaneRegistration)
 
 	var plane entities.Plane
 
-	err := row.Scan(&plane.PlaneRegistration, &plane.PlaneType, &plane.Location, &plane.TotalPassengers, &plane.MaxPassengers, &plane.EconomyPassengers, &plane.BusinessPassengers, &plane.FirstClassPassengers, &plane.FlightNumber, &plane.IsAvailable)
+	err := row.Scan(&plane.Registration, &plane.Model, &plane.Manufacturer, &plane.Capacity, &plane.Status, &plane.CreatedAt, &plane.UpdatedAt)
 	if err != nil {
 		log.Error().Err(err).Str("registration", request.PlaneRegistration).Msg("Error querying plane by registration")
 		return entities.Plane{}, err
@@ -115,7 +111,7 @@ func (r *PlaneRepositoryImpl) GetPlaneByFlightNumber(request entities.GetPlaneBy
 
 	var plane entities.Plane
 
-	err := row.Scan(&plane.PlaneRegistration, &plane.PlaneType, &plane.Location, &plane.TotalPassengers, &plane.MaxPassengers, &plane.EconomyPassengers, &plane.BusinessPassengers, &plane.FirstClassPassengers, &plane.FlightNumber, &plane.IsAvailable)
+	err := row.Scan(&plane.Registration, &plane.Model, &plane.Manufacturer, &plane.Capacity, &plane.Status, &plane.CreatedAt, &plane.UpdatedAt)
 	if err != nil {
 		log.Error().Err(err).Str("flight_number", request.FlightNumber).Msg("Error querying plane by flight number")
 		return entities.Plane{}, err
@@ -137,7 +133,7 @@ func (r *PlaneRepositoryImpl) GetPlaneByLocation(request entities.GetPlaneByLoca
 	var planes []entities.Plane
 	for rows.Next() {
 		var plane entities.Plane
-		err := rows.Scan(&plane.PlaneRegistration, &plane.PlaneType, &plane.Location, &plane.TotalPassengers, &plane.MaxPassengers, &plane.EconomyPassengers, &plane.BusinessPassengers, &plane.FirstClassPassengers, &plane.FlightNumber, &plane.IsAvailable)
+		err := rows.Scan(&plane.Registration, &plane.Model, &plane.Manufacturer, &plane.Capacity, &plane.Status, &plane.CreatedAt, &plane.UpdatedAt)
 		if err != nil {
 			log.Error().Err(err).Msg("Error scanning plane row")
 			return planes, err
