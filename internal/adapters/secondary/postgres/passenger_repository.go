@@ -182,7 +182,7 @@ func (r *PassengerRepositoryImpl) GetPassengersBySpecificFlight(request entities
 }
 
 func (r *PassengerRepositoryImpl) CreatePassenger(request entities.CreatePassengerRequest) error {
-	log.Info().Str("national_id", request.NationalId).Msg("Creating new passenger")
+	log.Info().Str("national_id", request.Passenger.NationalId).Msg("Creating new passenger")
 
 	query := `
         INSERT INTO passengers (
@@ -192,30 +192,30 @@ func (r *PassengerRepositoryImpl) CreatePassenger(request entities.CreatePasseng
         )
     `
 	_, err := r.db.Exec(query,
-		request.NationalId,
-		request.PnrNo,
-		request.FlightId,
-		request.PaymentId,
-		request.BaggageAllowance,
-		request.BaggageId,
-		request.FareType,
-		request.Seat,
-		request.Meal,
-		request.ExtraBaggage,
-		request.CheckIn,
-		request.Name,
-		request.Surname,
-		request.Email,
-		request.Phone,
-		request.Gender,
-		request.BirthDate,
-		request.CipMember,
-		request.VipMember,
-		request.Disabled,
-		request.Child,
+		request.Passenger.NationalId,
+		request.Passenger.PnrNo,
+		request.Passenger.FlightId,
+		request.Passenger.PaymentId,
+		request.Passenger.BaggageAllowance,
+		request.Passenger.BaggageId,
+		request.Passenger.FareType,
+		request.Passenger.Seat,
+		request.Passenger.Meal,
+		request.Passenger.ExtraBaggage,
+		request.Passenger.CheckIn,
+		request.Passenger.Name,
+		request.Passenger.Surname,
+		request.Passenger.Email,
+		request.Passenger.Phone,
+		request.Passenger.Gender,
+		request.Passenger.BirthDate,
+		request.Passenger.CipMember,
+		request.Passenger.VipMember,
+		request.Passenger.Disabled,
+		request.Passenger.Child,
 	)
 	if err != nil {
-		log.Error().Err(err).Str("national_id", request.NationalId).Msg("Error creating passenger")
+		log.Error().Err(err).Str("national_id", request.Passenger.NationalId).Msg("Error creating passenger")
 		return err
 	}
 	return nil

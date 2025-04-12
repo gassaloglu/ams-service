@@ -3,6 +3,7 @@ package postgres
 import (
 	"ams-service/internal/core/entities"
 	"database/sql"
+	"strconv"
 
 	"github.com/rs/zerolog/log"
 )
@@ -47,10 +48,10 @@ func (r *BankRepositoryImpl) GetAllCreditCards() ([]entities.CreditCard, error) 
 }
 
 func (r *BankRepositoryImpl) Pay(request entities.PaymentRequest) error {
-	query := `INSERT INTO payments (payment_id, status, user_id, amount, currency, payment_method) VALUES ($1, $2, $3, $4, $5, $6)`
-	_, err := r.db.Exec(query, request.PaymentID, request.Status, request.UserID, request.Amount, request.Currency, request.PaymentMethod)
+	query := `INSERT INTO payments (payment_request_id, status, transaction_id, amount, currency) VALUES ($1, $2, $3, $4, $5)`
+	_, err := r.db.Exec(query, request.ID, request.Status, request.TransactionID, request.Amount, request.Currency)
 	if err != nil {
-		log.Error().Err(err).Str("payment_id", request.PaymentID).Msg("Error processing payment")
+		log.Error().Err(err).Str("transaction_id", request.TransactionID).Msg("Error processing payment")
 		return err
 	}
 	return nil
@@ -60,7 +61,7 @@ func (r *BankRepositoryImpl) Refund(request entities.RefundRequest) error {
 	query := `INSERT INTO refunds (payment_id, amount, currency, reason, status) VALUES ($1, $2, $3, $4, $5)`
 	_, err := r.db.Exec(query, request.PaymentID, request.Amount, request.Currency, request.Reason, request.Status)
 	if err != nil {
-		log.Error().Err(err).Str("payment_id", request.PaymentID).Msg("Error processing refund")
+		log.Error().Err(err).Str("payment_id", strconv.FormatUint(uint64(request.ID), 10)).Msg("Error processing refund")
 		return err
 	}
 	return nil
