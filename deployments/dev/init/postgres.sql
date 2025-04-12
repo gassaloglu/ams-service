@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS passengers (
 );
 
 -- Create luggage table for PostgreSQL
-CREATE TABLE baggages (
+CREATE TABLE IF NOT EXISTS baggages (
     baggage_id VARCHAR(12) PRIMARY KEY,
     baggage_allowance FLOAT DEFAULT NULL,
     weight FLOAT NOT NULL,
