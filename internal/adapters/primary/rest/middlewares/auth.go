@@ -3,6 +3,7 @@ package middlewares
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -11,6 +12,12 @@ import (
 )
 
 func AuthMiddleware(jwtSecretKey string) fiber.Handler {
+	if strings.EqualFold(os.Getenv("DISABLE_AUTH"), "true") {
+		return func(c *fiber.Ctx) error {
+			return c.Next()
+		}
+	}
+
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
