@@ -59,10 +59,10 @@ func (s *PassengerService) GetPassengersBySpecificFlight(request entities.GetPas
 func (s *PassengerService) CreatePassenger(request entities.CreatePassengerRequest) error {
 	err := s.repo.CreatePassenger(request)
 	if err != nil {
-		log.Error().Err(err).Str("national_id", request.NationalId).Msg("Error creating passenger")
+		log.Error().Err(err).Str("national_id", request.Passenger.NationalId).Msg("Error creating passenger")
 		return err
 	}
-	log.Info().Str("national_id", request.NationalId).Msg("Successfully created passenger")
+	log.Info().Str("national_id", request.Passenger.NationalId).Msg("Successfully created passenger")
 	return nil
 }
 

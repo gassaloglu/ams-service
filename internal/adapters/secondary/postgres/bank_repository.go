@@ -61,7 +61,7 @@ func (r *BankRepositoryImpl) Refund(request entities.RefundRequest) error {
 	query := `INSERT INTO refunds (payment_id, amount, currency, reason, status) VALUES ($1, $2, $3, $4, $5)`
 	_, err := r.db.Exec(query, request.PaymentID, request.Amount, request.Currency, request.Reason, request.Status)
 	if err != nil {
-		log.Error().Err(err).Str("payment_id", strconv.FormatUint(uint64(request.PaymentID), 10)).Msg("Error processing refund")
+		log.Error().Err(err).Str("payment_id", strconv.FormatUint(uint64(request.ID), 10)).Msg("Error processing refund")
 		return err
 	}
 	return nil

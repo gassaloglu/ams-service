@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+/* Passenger */
 type GetPassengerByIdRequest struct {
 	NationalId string `query:"national_id" binding:"required,len=11,numeric"`
 }
@@ -29,33 +30,24 @@ type GetPassengersBySpecificFlightRequest struct {
 }
 
 type CreatePassengerRequest struct {
-	NationalId       string    `json:"national_id" binding:"required,len=11,numeric"`
-	PnrNo            string    `json:"pnr_no" binding:"required,len=6,alphanum"`
-	FlightId         int       `json:"flight_id" binding:"required"`
-	PaymentId        int       `json:"payment_id" binding:"required"`
-	BaggageAllowance int       `json:"baggage_allowance" binding:"required"`
-	BaggageId        string    `json:"baggage_id" binding:"required"`
-	FareType         string    `json:"fare_type" binding:"required"`
-	Seat             int       `json:"seat"`
-	Meal             string    `json:"meal" binding:"required"`
-	ExtraBaggage     int       `json:"extra_baggage" binding:"required"`
-	CheckIn          bool      `json:"check_in"`
-	Name             string    `json:"name" binding:"required"`
-	Surname          string    `json:"surname" binding:"required"`
-	Email            string    `json:"email" binding:"required,email"`
-	Phone            string    `json:"phone" binding:"required,len=15,numeric"`
-	Gender           string    `json:"gender" binding:"required"`
-	BirthDate        time.Time `json:"birth_date"`
-	CipMember        bool      `json:"cip_member"`
-	VipMember        bool      `json:"vip_member"`
-	Disabled         bool      `json:"disabled"`
-	Child            bool      `json:"child"`
+	Passenger Passenger
 }
 
+/* Employee */
 type RegisterEmployeeRequest struct {
 	Employee Employee
 }
 
+type LoginEmployeeRequest struct {
+	EmployeeID string `json:"employee_id"`
+	Password   string `json:"password"`
+}
+
+type GetEmployeeByIdRequest struct {
+	EmployeeID string `json:"employee_id" binding:"required"`
+}
+
+/* Plane */
 type AddPlaneRequest struct {
 	Plane Plane
 }
@@ -77,19 +69,19 @@ type GetPlaneByLocationRequest struct {
 	Location string `json:"location" binding:"required"`
 }
 
+/* Flight */
 type GetSpecificFlightRequest struct {
 	FlightNumber      string `query:"flight_number"`
 	DepartureDateTime string `query:"departure_datetime"`
 }
 
-type LoginRequest struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+type CancelFlightRequest struct {
+	FlightNumber string `json:"flight_number" binding:"required"`
+	FlightDate   string `json:"flight_date" binding:"required,datetime=2006-01-02"`
 }
 
-type LoginEmployeeRequest struct {
-	EmployeeID string `json:"employee_id"`
-	Password   string `json:"password"`
+type AddFlightRequest struct {
+	Flight Flight `json:"flight" binding:"required"`
 }
 
 type GetAllFlightsDestinationDateRequest struct {
@@ -98,15 +90,25 @@ type GetAllFlightsDestinationDateRequest struct {
 	DepartureDateTime  string `query:"departure_datetime" binding:"required,datetime=2006-01-02"`
 }
 
-type CancelFlightRequest struct {
-	FlightNumber string `json:"flight_number" binding:"required"`
-	FlightDate   string `json:"flight_date" binding:"required,datetime=2006-01-02"`
+/* User */
+type LoginRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
-type GetEmployeeByIdRequest struct {
-	EmployeeID string `json:"employee_id" binding:"required"`
-}
-
-type AddFlightRequest struct {
-	Flight Flight `json:"flight" binding:"required"`
+/* Payment */
+type PaymentRequest struct {
+	ID                uint      `json:"id" gorm:"primaryKey;autoIncrement"`
+	Amount            float64   `json:"amount" gorm:"type:decimal(10,2);not null"`
+	CardNumber        string    `json:"card_number" gorm:"size:16;not null"` // encrypted
+	CardHolderName    string    `json:"card_holder_name" gorm:"size:100;not null"`
+	CardHolderSurname string    `json:"card_holder_surname" gorm:"size:100;not null"`
+	ExpirationMonth   int       `json:"expiration_month" gorm:"not null"` // 1-12
+	ExpirationYear    int       `json:"expiration_year" gorm:"not null"`
+	CVV               string    `json:"cvv" gorm:"size:4;not null"` // encrypted, for amex size: 4
+	Currency          string    `json:"currency" gorm:"size:3;not null"`
+	IssuerBank        string    `json:"issuer_bank" gorm:"size:100"`
+	Status            string    `json:"status" gorm:"type:status_enum;default:'active';not null"`
+	TransactionID     string    `json:"transaction_id" gorm:"size:100;not null"`
+	CreatedAt         time.Time `json:"created_at" gorm:"autoCreateTime"`
 }

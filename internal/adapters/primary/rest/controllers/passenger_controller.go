@@ -88,7 +88,7 @@ func (c *PassengerController) CreatePassenger(ctx *fiber.Ctx) error {
 
 	err := c.service.CreatePassenger(request)
 	if err != nil {
-		log.Error().Err(err).Str("national_id", request.NationalId).Msg("Error creating passenger")
+		log.Error().Err(err).Str("national_id", request.Passenger.NationalId).Msg("Error creating passenger")
 		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error creating passenger"})
 	}
 	return ctx.Status(http.StatusCreated).JSON(fiber.Map{"message": "Passenger created successfully"})
