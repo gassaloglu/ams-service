@@ -5,7 +5,7 @@ import (
 )
 
 type FlightService interface {
-	GetSpecificFlight(request entities.GetSpecificFlightRequest, userId string) (entities.Flight, error)
+	GetSpecificFlight(request entities.GetSpecificFlightRequest) (entities.Flight, error)
 	GetAllFlights() ([]entities.Flight, error)
 	GetAllFlightsDestinationDateFlights(request entities.GetAllFlightsDestinationDateRequest) ([]entities.Flight, error)
 	GetAllActiveFlights() ([]entities.Flight, error)

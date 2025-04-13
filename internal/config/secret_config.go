@@ -12,8 +12,6 @@ type SecretConfig struct {
 	JWTSecretKey string `mapstructure:"jwt_secret_key"`
 }
 
-var JWTSecretKey string
-
 func LoadSecretConfig() (*SecretConfig, error) {
 	secretConfigFile, found := os.LookupEnv("SECRET_FILE")
 
@@ -34,9 +32,7 @@ func LoadSecretConfig() (*SecretConfig, error) {
 		return nil, err
 	}
 
-	JWTSecretKey = secretConfig.JWTSecretKey
-
-	log.Info().Msg("JWT Secret Key loaded successfully")
+	log.Info().Str("file", secretConfigFile).Msg("Secret config loaded successfully")
 
 	return &secretConfig, nil
 }
