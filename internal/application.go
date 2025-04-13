@@ -36,6 +36,12 @@ func Run() {
 		log.Fatal().Err(err).Msg("Failed to load configuration")
 	}
 
+	// Load secrets
+	scfg, err := config.LoadSecretConfig()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to load secrets")
+	}
+
 	var userRepo secondary.UserRepository
 	var passengerRepo secondary.PassengerRepository
 	var planeRepo secondary.PlaneRepository
@@ -75,10 +81,11 @@ func Run() {
 	}
 
 	// Initialize services
+	tokenService := services.NewTokenService(scfg.JWTSecretKey)
 	passengerService := services.NewPassengerService(passengerRepo)
-	userService := services.NewUserService(userRepo)
+	userService := services.NewUserService(userRepo, tokenService)
 	planeService := services.NewPlaneService(planeRepo)
-	employeeService := services.NewEmployeeService(employeeRepo)
+	employeeService := services.NewEmployeeService(employeeRepo, tokenService)
 	flightService := services.NewFlightService(flightRepo)
 	bankService := services.NewBankService(bankRepo)
 
@@ -92,12 +99,13 @@ func Run() {
 
 	// Setup Fiber app
 	app := fiber.New(fiber.Config{
-		AppName: "AMS Service",
+		AppName:      "AMS Service",
+		ErrorHandler: middlewares.ErrorHandler,
 	})
 
 	// Add middleware
+	app.Use(middlewares.TokenServiceInjector(tokenService))
 	app.Use(middlewares.Logger())
-	app.Use(middlewares.ErrorHandler())
 
 	// Register routes
 	routes.RegisterUserRoutes(app, userController)

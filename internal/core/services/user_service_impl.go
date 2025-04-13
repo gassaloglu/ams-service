@@ -1,25 +1,21 @@
 package services
 
 import (
-	"ams-service/internal/config"
 	"ams-service/internal/core/entities"
 	"ams-service/internal/ports/primary"
 	"ams-service/internal/ports/secondary"
 	"ams-service/internal/utils"
-	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/rs/zerolog/log"
 )
 
-var TokenExpiryDuration = time.Hour * 72
-
 type UserService struct {
-	repo secondary.UserRepository
+	repo  secondary.UserRepository
+	token primary.TokenService
 }
 
-func NewUserService(repo secondary.UserRepository) primary.UserService {
-	return &UserService{repo: repo}
+func NewUserService(repo secondary.UserRepository, token primary.TokenService) primary.UserService {
+	return &UserService{repo: repo, token: token}
 }
 
 func (s *UserService) RegisterUser(user entities.User) error {
@@ -54,22 +50,12 @@ func (s *UserService) LoginUser(username, password string) (*entities.User, stri
 		return nil, "", err
 	}
 
-	token, err := generateJWTToken(user)
+	token, err := s.token.CreateUserToken(user)
 	if err != nil {
-		log.Error().Err(err).Str("username", username).Msg("Error generating JWT token")
+		log.Error().Err(err).Str("username", username).Msg("Error generating user auth token")
 		return nil, "", err
 	}
 
 	log.Info().Str("username", username).Msg("Successfully logged in user")
 	return user, token, nil
-}
-
-func generateJWTToken(user *entities.User) (string, error) {
-	claims := jwt.MapClaims{
-		"user_id": user.ID,
-		"exp":     time.Now().Add(TokenExpiryDuration).Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(config.JWTSecretKey))
 }
