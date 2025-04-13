@@ -11,7 +11,7 @@ func ErrorHandler(c *fiber.Ctx, err error) error {
 	var fiberError *fiber.Error
 
 	if errors.As(err, &fiberError) {
-		log.Error().Err(err).Msg("Request error")
+		log.Error().Int("status", fiberError.Code).Err(err).Msg("Request error")
 		return c.Status(fiberError.Code).JSON(fiberError.Message)
 	}
 

@@ -78,14 +78,16 @@ func extractBearerToken(ctx *fiber.Ctx) (string, error) {
 
 func createProtection(rule func(string, primary.TokenService) error) fiber.Handler {
 	if isAuthDisabled() {
-		return nil
+		return func(ctx *fiber.Ctx) error {
+			return ctx.Next()
+		}
 	}
 
 	return func(ctx *fiber.Ctx) error {
 		tokenService := getTokenService(ctx)
 		token, err := extractBearerToken(ctx)
 		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 		}
 
 		err = rule(token, tokenService)
