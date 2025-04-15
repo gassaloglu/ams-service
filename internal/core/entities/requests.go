@@ -48,17 +48,22 @@ type GetEmployeeByIdRequest struct {
 }
 
 /* Plane */
-type AddPlaneRequest struct {
-	Plane Plane
-}
+type AddPlaneRequest []Plane
 
 type SetPlaneStatusRequest struct {
-	PlaneRegistration string `json:"plane_registration" binding:"required"`
-	IsAvailable       bool   `json:"is_available" binding:"required"`
+	PlaneRegistration string `params:"registration" binding:"required"`
+	Status            string `json:"status" binding:"required"`
+}
+
+type GetAllPlanesRequest struct {
+	Model        string `query:"model"`
+	Manufacturer string `query:"manufacturer"`
+	Capacity     int    `query:"capacity"`
+	Status       string `query:"status"`
 }
 
 type GetPlaneByRegistrationRequest struct {
-	PlaneRegistration string `query:"registration_code" binding:"required"`
+	Registration string `params:"registration" binding:"required"`
 }
 
 type GetPlaneByFlightNumberRequest struct {

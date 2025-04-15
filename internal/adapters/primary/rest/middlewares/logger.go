@@ -14,9 +14,6 @@ func Logger() fiber.Handler {
 
 		// Process request
 		err := c.Next()
-		if err != nil {
-			return err
-		}
 
 		// Get request timing
 		latency := time.Since(start)
@@ -52,6 +49,6 @@ func Logger() fiber.Handler {
 			Int("size", size).
 			Msg("HTTP Request")
 
-		return nil
+		return err
 	}
 }
