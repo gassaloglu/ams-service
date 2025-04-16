@@ -34,9 +34,7 @@ type CreatePassengerRequest struct {
 }
 
 /* Employee */
-type RegisterEmployeeRequest struct {
-	Employee Employee
-}
+type RegisterEmployeeRequest []Employee
 
 type LoginEmployeeRequest struct {
 	EmployeeID string `json:"employee_id"`

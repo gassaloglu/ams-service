@@ -6,6 +6,6 @@ import (
 
 type EmployeeRepository interface {
 	GetEmployeeByID(request entities.GetEmployeeByIdRequest) (entities.Employee, error)
-	RegisterEmployee(request entities.RegisterEmployeeRequest) error
+	RegisterEmployee(request entities.Employee) error
 	LoginEmployee(employeeID, password string) (*entities.Employee, error)
 }

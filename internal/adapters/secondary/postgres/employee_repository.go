@@ -75,7 +75,7 @@ func (r *EmployeeRepositoryImpl) GetEmployeeByID(request entities.GetEmployeeByI
 	return *employee, nil
 }
 
-func (r *EmployeeRepositoryImpl) RegisterEmployee(request entities.RegisterEmployeeRequest) error {
+func (r *EmployeeRepositoryImpl) RegisterEmployee(employee entities.Employee) error {
 	log.Info().Msg("Registering new employee")
 
 	query := `
@@ -89,31 +89,31 @@ func (r *EmployeeRepositoryImpl) RegisterEmployee(request entities.RegisterEmplo
     `
 	_, err := r.db.Exec(
 		query,
-		request.Employee.EmployeeID,
-		request.Employee.Name,
-		request.Employee.Surname,
-		request.Employee.Email,
-		request.Employee.Phone,
-		request.Employee.Address,
-		request.Employee.Gender,
-		request.Employee.BirthDate,
-		request.Employee.HireDate,
-		request.Employee.Position,
-		request.Employee.Role,
-		request.Employee.Salary,
-		request.Employee.Status,
-		request.Employee.EmergencyContact,
-		request.Employee.EmergencyPhone,
-		request.Employee.ProfileImageURL,
-		request.Employee.PasswordHash,
-		request.Employee.Salt,
+		employee.EmployeeID,
+		employee.Name,
+		employee.Surname,
+		employee.Email,
+		employee.Phone,
+		employee.Address,
+		employee.Gender,
+		employee.BirthDate,
+		employee.HireDate,
+		employee.Position,
+		employee.Role,
+		employee.Salary,
+		employee.Status,
+		employee.EmergencyContact,
+		employee.EmergencyPhone,
+		employee.ProfileImageURL,
+		employee.PasswordHash,
+		employee.Salt,
 	)
 	if err != nil {
-		log.Error().Err(err).Str("employee_id", request.Employee.EmployeeID).Msg("Error registering employee")
+		log.Error().Err(err).Str("employee_id", employee.EmployeeID).Msg("Error registering employee")
 		return err
 	}
 
-	log.Info().Str("employee_id", request.Employee.EmployeeID).Msg("Successfully registered employee")
+	log.Info().Str("employee_id", employee.EmployeeID).Msg("Successfully registered employee")
 	return nil
 }
 
