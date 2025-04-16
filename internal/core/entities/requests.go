@@ -85,9 +85,7 @@ type CancelFlightRequest struct {
 	FlightDate   string `json:"flight_date" binding:"required,datetime=2006-01-02"`
 }
 
-type AddFlightRequest struct {
-	Flight Flight `json:"flight" binding:"required"`
-}
+type AddFlightRequest []Flight
 
 type GetAllFlightsDestinationDateRequest struct {
 	DepartureAirport   string `query:"departure_airport" binding:"required,len=3,alpha"`
