@@ -28,27 +28,29 @@ func (s *EmployeeServiceImpl) GetEmployeeByID(request entities.GetEmployeeByIdRe
 }
 
 func (s *EmployeeServiceImpl) RegisterEmployee(request entities.RegisterEmployeeRequest) error {
-	salt, err := utils.GenerateSalt(16)
-	if err != nil {
-		log.Error().Err(err).Msg("Error generating salt")
-		return err
-	}
+	for _, employee := range request {
+		salt, err := utils.GenerateSalt(16)
+		if err != nil {
+			log.Error().Err(err).Msg("Error generating salt")
+			return err
+		}
 
-	hashedPassword, err := utils.HashPassword(request.Employee.PasswordHash, salt)
-	if err != nil {
-		log.Error().Err(err).Msg("Error hashing password")
-		return err
-	}
+		hashedPassword, err := utils.HashPassword(employee.PasswordHash, salt)
+		if err != nil {
+			log.Error().Err(err).Msg("Error hashing password")
+			return err
+		}
 
-	request.Employee.PasswordHash = hashedPassword
-	request.Employee.Salt = salt
+		employee.PasswordHash = hashedPassword
+		employee.Salt = salt
 
-	err = s.repo.RegisterEmployee(request)
-	if err != nil {
-		log.Error().Err(err).Msg("Error registering employee")
-		return err
+		err = s.repo.RegisterEmployee(employee)
+		if err != nil {
+			log.Error().Err(err).Msg("Error registering employee")
+			return err
+		}
+		log.Info().Interface("employee", employee).Msg("Successfully registered employee")
 	}
-	log.Info().Interface("employee", request.Employee).Msg("Successfully registered employee")
 	return nil
 }
 
