@@ -4,11 +4,10 @@ import (
 	"ams-service/internal/adapters/primary/rest/controllers"
 	"ams-service/internal/adapters/primary/rest/middlewares"
 	"ams-service/internal/adapters/primary/rest/routes"
-	"ams-service/internal/adapters/secondary/postgres"
+	postgresAdapter "ams-service/internal/adapters/secondary/postgres"
 	"ams-service/internal/config"
 	"ams-service/internal/core/services"
-	"ams-service/internal/ports/secondary"
-	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,13 +15,14 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	pg "gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func Run() {
-	initLogger()
+	setupLogger()
 
 	// Load default environment variables from .env file first
 	err := godotenv.Load()
@@ -42,43 +42,19 @@ func Run() {
 		log.Fatal().Err(err).Msg("Failed to load secrets")
 	}
 
-	var userRepo secondary.UserRepository
-	var passengerRepo secondary.PassengerRepository
-	var planeRepo secondary.PlaneRepository
-	var employeeRepo secondary.EmployeeRepository
-	var flightRepo secondary.FlightRepository
-	var bankRepo secondary.BankRepository
-
 	// Initialize database connection based on configuration
-	switch cfg.Database.Type {
-	case "postgres":
-		db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-			cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.Name, cfg.Database.SSLMode))
-
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to connect to PostgreSQL database")
-			return
-		}
-
-		defer db.Close()
-
-		// Ping the database to test the connection
-		if err := db.Ping(); err != nil {
-			log.Error().Err(err).Msg("Failed to ping PostgreSQL database")
-			return
-		}
-
-		log.Info().Msg("Connected to PostgreSQL database")
-
-		userRepo = postgres.NewUserRepositoryImpl(db)
-		passengerRepo = postgres.NewPassengerRepositoryImpl(db)
-		planeRepo = postgres.NewPlaneRepositoryImpl(db)
-		flightRepo = postgres.NewFlightRepositoryImpl(db)
-		employeeRepo = postgres.NewEmployeeRepositoryImpl(db)
-		bankRepo = postgres.NewBankRepositoryImpl(db)
-	default:
-		log.Fatal().Msgf("Unsupported database type %s", cfg.Database.Type)
+	db, err := setupDatabaseConnection(cfg)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize database")
 	}
+
+	// Initialize repositories
+	userRepo := postgresAdapter.NewUserRepositoryImpl(db)
+	passengerRepo := postgresAdapter.NewPassengerRepositoryImpl(db)
+	planeRepo := postgresAdapter.NewPlaneRepositoryImpl(db)
+	flightRepo := postgresAdapter.NewFlightRepositoryImpl(db)
+	employeeRepo := postgresAdapter.NewEmployeeRepositoryImpl(db)
+	bankRepo := postgresAdapter.NewBankRepositoryImpl(db)
 
 	// Initialize services
 	tokenService := services.NewTokenService(scfg.JWTSecretKey)
@@ -127,7 +103,7 @@ func Run() {
 	}
 }
 
-func initLogger() {
+func setupLogger() {
 	zerolog.CallerMarshalFunc = func(pc uintptr, file string, line int) string {
 		return filepath.Base(file) + ":" + strconv.Itoa(line)
 	}
@@ -137,4 +113,19 @@ func initLogger() {
 		With().
 		Caller().
 		Logger()
+}
+
+func buildDsn(db *config.DatabaseConfig) string {
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		db.Host, db.Port, db.User, db.Password, db.Name, db.SSLMode)
+}
+
+func setupDatabaseConnection(cfg *config.Config) (*gorm.DB, error) {
+	switch cfg.Database.Type {
+	case "postgres":
+		dsn := buildDsn(&cfg.Database)
+		return gorm.Open(pg.Open(dsn), &gorm.Config{})
+	default:
+		return nil, errors.New("unsupported database type")
+	}
 }
