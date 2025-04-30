@@ -30,7 +30,8 @@ func HashPassword(password, salt string) (string, error) {
 		return "", fmt.Errorf("failed to decode salt: %v", err)
 	}
 
-	hash := pbkdf2.Key([]byte(password), saltBytes, 10000, 32, sha256.New)
+	bytes := []byte(password)
+	hash := pbkdf2.Key(bytes, saltBytes, 10000, 32, sha256.New)
 	hashedPassword := base64.StdEncoding.EncodeToString(hash)
 	log.Info().Msg("Successfully hashed password")
 	return hashedPassword, nil

@@ -5,6 +5,6 @@ import (
 )
 
 type UserService interface {
-	RegisterUser(user entities.User) error
-	LoginUser(username, password string) (*entities.User, string, error)
+	Register(user *entities.UserRegisterRequest) (string, error)
+	Login(email, password string) (string, error)
 }

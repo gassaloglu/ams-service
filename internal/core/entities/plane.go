@@ -3,7 +3,7 @@ package entities
 import "time"
 
 type Plane struct {
-	ID           uint      `json:"id" gorm:"primaryKey;autoIncrement;u"`
+	ID           uint      `json:"id" gorm:"primaryKey;autoIncrement"`
 	Registration string    `json:"registration" gorm:"unique;size:10;not null"`
 	Model        string    `json:"model" gorm:"size:50;not null"`
 	Manufacturer string    `json:"manufacturer" gorm:"size:50;not null"`

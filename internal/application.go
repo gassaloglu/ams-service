@@ -14,6 +14,7 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -82,6 +83,7 @@ func Run() {
 	// Add middleware
 	app.Use(middlewares.TokenServiceInjector(tokenService))
 	app.Use(middlewares.Logger())
+	app.Use(cors.New())
 
 	// Register routes
 	routes.RegisterUserRoutes(app, userController)

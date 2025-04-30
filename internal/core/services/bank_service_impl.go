@@ -43,7 +43,7 @@ func (s *BankServiceImpl) Pay(request entities.PaymentRequest) error {
 	return nil
 }
 
-func (s *BankServiceImpl) Refund(request entities.RefundRequest) error {
+func (s *BankServiceImpl) Refund(request entities.Refund) error {
 	err := s.repo.Refund(request)
 	if err != nil {
 		log.Error().Err(err).Msg("Error processing refund")
