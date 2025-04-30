@@ -92,9 +92,19 @@ type GetAllFlightsDestinationDateRequest struct {
 }
 
 /* User */
-type LoginRequest struct {
-	Username string `json:"username" binding:"required"`
+type UserLoginRequest struct {
+	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
+}
+
+type UserRegisterRequest struct {
+	Name      string    `json:"name" binding:"required"`
+	Surname   string    `json:"surname" binding:"required"`
+	Email     string    `json:"email" binding:"required"`
+	Password  string    `json:"password" binding:"required"`
+	Phone     string    `json:"phone" binding:"required"`
+	Gender    string    `json:"gender" binding:"required"`
+	BirthDate time.Time `json:"birth_date" binding:"required,datetime=2006-01-02"`
 }
 
 /* Payment */

@@ -6,8 +6,7 @@ import (
 
 type Payment struct {
 	ID            uint      `json:"id" gorm:"primaryKey;autoIncrement"`
-	PaymentID     string    `json:"payment_id" gorm:"unique;not null;size:50"`
-	UserID        string    `json:"user_id" gorm:"not null;size:50"`
+	UserID        string    `json:"user_id" gorm:"not null;size:50;index:idx_payments_user_id"`
 	CardNumber    string    `json:"card_number" gorm:"size:16;not null"`
 	Amount        float64   `json:"amount" gorm:"type:decimal(10,2);not null"`
 	Currency      string    `json:"currency" gorm:"size:3;not null"`

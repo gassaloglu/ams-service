@@ -57,7 +57,7 @@ func (c *BankController) Pay(ctx *fiber.Ctx) error {
 }
 
 func (c *BankController) Refund(ctx *fiber.Ctx) error {
-	var request entities.RefundRequest
+	var request entities.Refund
 	if err := ctx.BodyParser(&request); err != nil {
 		log.Error().Err(err).Msg("Error binding JSON")
 		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})

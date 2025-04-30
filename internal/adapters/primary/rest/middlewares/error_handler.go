@@ -12,7 +12,7 @@ func ErrorHandler(c *fiber.Ctx, err error) error {
 
 	if errors.As(err, &fiberError) {
 		log.Error().Int("status", fiberError.Code).Err(err).Msg("Request error")
-		return c.Status(fiberError.Code).JSON(fiberError.Message)
+		return c.Status(fiberError.Code).JSON(fiberError)
 	}
 
 	return nil

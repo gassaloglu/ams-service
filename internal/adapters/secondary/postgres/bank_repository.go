@@ -12,7 +12,7 @@ type BankRepositoryImpl struct {
 }
 
 func NewBankRepositoryImpl(db *gorm.DB) *BankRepositoryImpl {
-	db.AutoMigrate(&entities.CreditCard{})
+	db.AutoMigrate(&entities.CreditCard{}, &entities.Refund{})
 	return &BankRepositoryImpl{db: db}
 }
 
@@ -32,7 +32,7 @@ func (r *BankRepositoryImpl) Pay(request entities.PaymentRequest) error {
 	return nil
 }
 
-func (r *BankRepositoryImpl) Refund(request entities.RefundRequest) error {
+func (r *BankRepositoryImpl) Refund(request entities.Refund) error {
 	log.Fatal().Msg("todo: refund")
 	return nil
 }
