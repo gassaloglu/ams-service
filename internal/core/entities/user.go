@@ -12,7 +12,7 @@ type User struct {
 	Phone        string    `json:"phone" gorm:"size:15"`
 	Gender       string    `json:"gender" gorm:"type:gender_enum;not null"`
 	BirthDate    time.Time `json:"birth_date" gorm:"not null"`
-	PasswordHash string    `json:"password_hash" gorm:"not null"`
+	PasswordHash string    `json:"-" gorm:"not null"`
 	Salt         string    `json:"-" gorm:"not null"`
 	CreatedAt    time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt    time.Time `json:"updated_at" gorm:"autoUpdateTime"`

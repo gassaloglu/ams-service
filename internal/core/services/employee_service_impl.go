@@ -5,8 +5,7 @@ import (
 	"ams-service/internal/ports/primary"
 	"ams-service/internal/ports/secondary"
 	"ams-service/internal/utils"
-
-	"github.com/rs/zerolog/log"
+	"errors"
 )
 
 type EmployeeServiceImpl struct {
@@ -18,55 +17,89 @@ func NewEmployeeService(repo secondary.EmployeeRepository, token primary.TokenSe
 	return &EmployeeServiceImpl{repo: repo, token: token}
 }
 
-func (s *EmployeeServiceImpl) GetEmployeeByID(request entities.GetEmployeeByIdRequest) (entities.Employee, error) {
-	employee, err := s.repo.GetEmployeeByID(request)
-	if err != nil {
-		log.Error().Err(err).Str("employee_id", request.EmployeeID).Msg("Error getting employee by employee_id")
-		return entities.Employee{}, err
-	}
-	return employee, nil
+func (s *EmployeeServiceImpl) FindAll() ([]entities.Employee, error) {
+	return s.repo.FindAll()
 }
 
-func (s *EmployeeServiceImpl) RegisterEmployee(request entities.RegisterEmployeeRequest) error {
-	for _, employee := range request {
-		salt, err := utils.GenerateSalt(16)
+func (s *EmployeeServiceImpl) RegisterAll(requests []entities.RegisterEmployeeRequest) error {
+	var employees []entities.Employee
+
+	for _, request := range requests {
+		employee, err := mapRegisterEmployeeRequestToEmployeeEntity(&request)
+
 		if err != nil {
-			log.Error().Err(err).Msg("Error generating salt")
 			return err
 		}
 
-		hashedPassword, err := utils.HashPassword(employee.PasswordHash, salt)
-		if err != nil {
-			log.Error().Err(err).Msg("Error hashing password")
-			return err
-		}
-
-		employee.PasswordHash = hashedPassword
-		employee.Salt = salt
-
-		err = s.repo.RegisterEmployee(employee)
-		if err != nil {
-			log.Error().Err(err).Msg("Error registering employee")
-			return err
-		}
-		log.Info().Interface("employee", employee).Msg("Successfully registered employee")
+		employees = append(employees, *employee)
 	}
-	return nil
+
+	return s.repo.CreateAll(employees)
 }
 
-func (s *EmployeeServiceImpl) LoginEmployee(employeeID, password string) (*entities.Employee, string, error) {
-	employee, err := s.repo.LoginEmployee(employeeID, password)
+func (s *EmployeeServiceImpl) Register(request *entities.RegisterEmployeeRequest) (string, error) {
+	employee, err := mapRegisterEmployeeRequestToEmployeeEntity(request)
 	if err != nil {
-		log.Error().Err(err).Str("employee_id", employeeID).Msg("Error logging in employee")
-		return nil, "", err
+		return "", err
+	}
+
+	employee, err = s.repo.Create(employee)
+	if err != nil {
+		return "", err
 	}
 
 	token, err := s.token.CreateEmployeeToken(employee)
 	if err != nil {
-		log.Error().Err(err).Str("employee_id", employeeID).Msg("Error generating employee auth token")
-		return nil, "", err
+		return "", err
 	}
 
-	log.Info().Str("employee_id", employeeID).Msg("Successfully logged in employee")
-	return employee, token, nil
+	return token, nil
+
+}
+
+func (s *EmployeeServiceImpl) Login(request *entities.LoginEmployeeRequest) (string, error) {
+	employee, err := s.repo.FindByNationalId(request.NationalID)
+	if err != nil {
+		return "", err
+	}
+
+	isValid, err := utils.VerifyPassword(request.Password, employee.PasswordHash, employee.Salt)
+	if err != nil || !isValid {
+		return "", errors.New("could not verify password")
+	}
+
+	token, err := s.token.CreateEmployeeToken(employee)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
+
+func mapRegisterEmployeeRequestToEmployeeEntity(request *entities.RegisterEmployeeRequest) (*entities.Employee, error) {
+	salt, err := utils.GenerateSalt(16)
+	if err != nil {
+		return nil, err
+	}
+
+	hashedPassword, err := utils.HashPassword(request.Password, salt)
+	if err != nil {
+		return nil, err
+	}
+
+	employee := &entities.Employee{
+		NationalID:   request.NationalID,
+		Name:         request.Name,
+		Surname:      request.Surname,
+		Email:        request.Email,
+		Phone:        request.Phone,
+		Gender:       request.Gender,
+		BirthDate:    request.BirthDate,
+		PasswordHash: hashedPassword,
+		Salt:         salt,
+		Title:        request.Title,
+		Role:         request.Role,
+	}
+
+	return employee, nil
 }

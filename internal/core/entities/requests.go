@@ -34,15 +34,22 @@ type CreatePassengerRequest struct {
 }
 
 /* Employee */
-type RegisterEmployeeRequest []Employee
-
-type LoginEmployeeRequest struct {
-	EmployeeID string `json:"employee_id"`
-	Password   string `json:"password"`
+type RegisterEmployeeRequest struct {
+	NationalID string    `json:"national_id"`
+	Name       string    `json:"name"`
+	Surname    string    `json:"surname"`
+	Email      string    `json:"email"`
+	Phone      string    `json:"phone"`
+	Gender     string    `json:"gender"`
+	BirthDate  time.Time `json:"birth_date"`
+	Password   string    `json:"password"`
+	Title      string    `json:"title"`
+	Role       string    `json:"role"`
 }
 
-type GetEmployeeByIdRequest struct {
-	EmployeeID string `json:"employee_id" binding:"required"`
+type LoginEmployeeRequest struct {
+	NationalID string `json:"national_id"`
+	Password   string `json:"password"`
 }
 
 /* Plane */
@@ -92,12 +99,12 @@ type GetAllFlightsDestinationDateRequest struct {
 }
 
 /* User */
-type UserLoginRequest struct {
+type LoginUserRequest struct {
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
-type UserRegisterRequest struct {
+type RegisterUserRequest struct {
 	Name      string    `json:"name" binding:"required"`
 	Surname   string    `json:"surname" binding:"required"`
 	Email     string    `json:"email" binding:"required"`

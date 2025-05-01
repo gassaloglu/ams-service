@@ -8,13 +8,16 @@ import (
 )
 
 func RegisterEmployeeRoutes(app *fiber.App, employeeController *controllers.EmployeeController) {
-	employeeRoute := app.Group("/employee")
+	employeeRoute := app.Group("/employees")
 
 	// Public routes
-	employeeRoute.Post("/login", employeeController.LoginEmployee)
-	employeeRoute.Post("/register", employeeController.RegisterEmployee)
+	employeeRoute.Post("/sessions", employeeController.LoginEmployee)
 
 	// Protected routes
 	employeeRoute.Use(middlewares.ProtectionForEmployees())
-	employeeRoute.Get("/", employeeController.GetEmployeeByID)
+	employeeRoute.Get("/", employeeController.GetEmployees)
+
+	// Admin routes
+	employeeRoute.Use(middlewares.ProtectionForRoles([]string{"admin"}))
+	employeeRoute.Post("/", employeeController.RegisterEmployee)
 }

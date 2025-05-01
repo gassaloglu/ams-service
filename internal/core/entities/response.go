@@ -1,7 +1,11 @@
 package entities
 
-type UserLoginResponse struct {
+type LoginUserResponse struct {
 	Token string `json:"token"`
 }
 
-type UserRegisterResponse = UserLoginResponse
+type RegisterUserResponse = LoginUserResponse
+
+type LoginEmployeeResponse = LoginUserResponse
+
+type RegisterEmployeeResponse = RegisterUserResponse

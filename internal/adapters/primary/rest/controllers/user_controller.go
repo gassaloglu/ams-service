@@ -16,7 +16,7 @@ func NewUserController(service primary.UserService) *UserController {
 }
 
 func (c *UserController) RegisterUser(ctx *fiber.Ctx) error {
-	var request entities.UserRegisterRequest
+	var request entities.RegisterUserRequest
 	if err := ctx.BodyParser(&request); err != nil {
 		log.Error().Err(err).Msg("Error binding register request")
 		return fiber.NewError(fiber.StatusBadRequest, "Malformed register request body")
@@ -30,12 +30,12 @@ func (c *UserController) RegisterUser(ctx *fiber.Ctx) error {
 
 	log.Info().Str("email", request.Email).Msg("Successfully registered user")
 
-	response := &entities.UserRegisterResponse{Token: token}
+	response := &entities.RegisterUserResponse{Token: token}
 	return ctx.Status(fiber.StatusCreated).JSON(response)
 }
 
 func (c *UserController) LoginUser(ctx *fiber.Ctx) error {
-	var request entities.UserLoginRequest
+	var request entities.LoginUserRequest
 	if err := ctx.BodyParser(&request); err != nil {
 		log.Error().Err(err).Msg("Error binding register request")
 		return fiber.NewError(fiber.StatusBadRequest, "Malformed register request body")
@@ -48,7 +48,7 @@ func (c *UserController) LoginUser(ctx *fiber.Ctx) error {
 	}
 
 	log.Info().Str("email", request.Email).Msg("Login successful")
-	
-	response := &entities.UserLoginResponse{Token: token}
+
+	response := &entities.LoginUserResponse{Token: token}
 	return ctx.Status(fiber.StatusOK).JSON(response)
 }

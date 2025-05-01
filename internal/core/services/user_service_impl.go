@@ -17,8 +17,8 @@ func NewUserService(repo secondary.UserRepository, token primary.TokenService) p
 	return &UserService{repo: repo, token: token}
 }
 
-func (s *UserService) Register(request *entities.UserRegisterRequest) (string, error) {
-	user, err := mapUserRegisterRequestToUserEntity(request)
+func (s *UserService) Register(request *entities.RegisterUserRequest) (string, error) {
+	user, err := mapRegisterUserRequestToUserEntity(request)
 	if err != nil {
 		return "", err
 	}
@@ -55,7 +55,7 @@ func (s *UserService) Login(email, password string) (string, error) {
 	return token, nil
 }
 
-func mapUserRegisterRequestToUserEntity(request *entities.UserRegisterRequest) (*entities.User, error) {
+func mapRegisterUserRequestToUserEntity(request *entities.RegisterUserRequest) (*entities.User, error) {
 	salt, err := utils.GenerateSalt(16)
 	if err != nil {
 		return nil, err

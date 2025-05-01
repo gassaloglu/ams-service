@@ -5,7 +5,8 @@ import (
 )
 
 type EmployeeRepository interface {
-	GetEmployeeByID(request entities.GetEmployeeByIdRequest) (entities.Employee, error)
-	RegisterEmployee(request entities.Employee) error
-	LoginEmployee(employeeID, password string) (*entities.Employee, error)
+	FindAll() ([]entities.Employee, error)
+	FindByNationalId(nationalId string) (*entities.Employee, error)
+	Create(employee *entities.Employee) (*entities.Employee, error)
+	CreateAll(employee []entities.Employee) error
 }

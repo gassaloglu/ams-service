@@ -3,6 +3,7 @@ package controllers
 import (
 	"ams-service/internal/core/entities"
 	"ams-service/internal/ports/primary"
+	"ams-service/internal/utils"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,58 +18,62 @@ func NewEmployeeController(service primary.EmployeeService) *EmployeeController 
 	return &EmployeeController{service: service}
 }
 
-func (c *EmployeeController) GetEmployeeByID(ctx *fiber.Ctx) error {
-	employeeID := ctx.Query("employee_id")
-	if employeeID == "" {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Employee ID is required",
-		})
-	}
-
-	request := entities.GetEmployeeByIdRequest{EmployeeID: employeeID}
-	employee, err := c.service.GetEmployeeByID(request)
+func (c *EmployeeController) GetEmployees(ctx *fiber.Ctx) error {
+	employees, err := c.service.FindAll()
 	if err != nil {
-		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": "Employee not found",
-		})
+		log.Error().Err(err).Msg("Failed to get all employees")
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(employee)
+	return ctx.Status(fiber.StatusOK).JSON(employees)
 }
 
 func (c *EmployeeController) RegisterEmployee(ctx *fiber.Ctx) error {
-	var request entities.RegisterEmployeeRequest
-	if err := ctx.BodyParser(&request); err != nil {
-		log.Error().Err(err).Msg("Error binding JSON")
-		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
-	}
+	if utils.IsBatchRequest(ctx) {
+		var requests []entities.RegisterEmployeeRequest
+		if err := ctx.BodyParser(&requests); err != nil {
+			log.Error().Err(err).Msg("Error binding JSON")
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
 
-	err := c.service.RegisterEmployee(request)
-	if err != nil {
-		log.Error().Err(err).Msg("Error registering employee")
-		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Server error"})
+		err := c.service.RegisterAll(requests)
+		if err != nil {
+			log.Error().Err(err).Msg("Error registering employees")
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		}
+
+		return ctx.SendStatus(http.StatusCreated)
+	} else {
+		var request entities.RegisterEmployeeRequest
+		if err := ctx.BodyParser(&request); err != nil {
+			log.Error().Err(err).Msg("Error binding JSON")
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
+
+		token, err := c.service.Register(&request)
+		if err != nil {
+			log.Error().Err(err).Msg("Error registering employee")
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		}
+
+		response := entities.RegisterEmployeeResponse{Token: token}
+		return ctx.Status(http.StatusCreated).JSON(response)
 	}
-	return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Employee registered successfully"})
 }
 
 func (c *EmployeeController) LoginEmployee(ctx *fiber.Ctx) error {
-	var loginRequest entities.LoginEmployeeRequest
-	if err := ctx.BodyParser(&loginRequest); err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request payload",
-		})
+	var request entities.LoginEmployeeRequest
+	if err := ctx.BodyParser(&request); err != nil {
+		log.Error().Err(err).Msg("Error binding JSON")
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	employee, token, err := c.service.LoginEmployee(loginRequest.EmployeeID, loginRequest.Password)
+	token, err := c.service.Login(&request)
 	if err != nil {
-		return ctx.Status(http.StatusUnauthorized).JSON(fiber.Map{
-			"error": "Invalid employee ID or password",
-		})
+		log.Error().Err(err).Msg("Error logging employee in")
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return ctx.Status(http.StatusOK).JSON(fiber.Map{
-		"message":  "Login successful",
-		"token":    token,
-		"employee": employee,
-	})
+	response := entities.LoginEmployeeResponse{Token: token}
+	return ctx.Status(http.StatusCreated).JSON(response)
 }

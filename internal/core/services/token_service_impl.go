@@ -14,13 +14,13 @@ var UserTokenExpiryDuration = time.Hour * 72
 var EmployeeTokenExpiryDuration = time.Hour * 72
 
 type userClaims struct {
-	UserID uint `json:"user_id"`
+	ID uint `json:"id"`
 	jwt.StandardClaims
 }
 
 type employeeClaims struct {
-	EmployeeID uint   `json:"employee_id"`
-	Role       string `json:"role"`
+	ID   uint   `json:"id"`
+	Role string `json:"role"`
 	jwt.StandardClaims
 }
 
