@@ -98,6 +98,10 @@ type GetAllFlightsDestinationDateRequest struct {
 	DepartureDateTime  string `query:"departure_datetime" binding:"required,datetime=2006-01-02"`
 }
 
+type FetchSeatMapRequest struct {
+	FlightID string `query:"flight_ID" binding:"required"`
+}
+
 /* User */
 type LoginUserRequest struct {
 	Email    string `json:"email" binding:"required"`

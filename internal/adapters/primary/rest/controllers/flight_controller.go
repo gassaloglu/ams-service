@@ -130,3 +130,19 @@ func (c *FlightController) AddFlight(ctx *fiber.Ctx) error {
 	log.Info().Msg("Successfully added flight")
 	return ctx.Status(http.StatusCreated).JSON(fiber.Map{"message": "Flight added successfully"})
 }
+
+func (c *FlightController) FetchSeatMap(ctx *fiber.Ctx) error {
+	var request entities.FetchSeatMapRequest
+	if err := ctx.QueryParser(&request); err != nil {
+		log.Error().Err(err).Msg("Error parsing query parameters")
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid query parameters"})
+	}
+
+	seats, err := c.service.FetchSeatMap(request)
+	if err != nil {
+		log.Error().Err(err).Str("flight_number", request.FlightID).Msg("Error fetching seat map")
+		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error fetching seat map"})
+	}
+
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{"seats": seats})
+}

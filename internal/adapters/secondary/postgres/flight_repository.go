@@ -64,3 +64,16 @@ func (r *FlightRepositoryImpl) AddFlight(request entities.AddFlightRequest) erro
 	result := r.db.Create(request)
 	return result.Error
 }
+
+func (r *FlightRepositoryImpl) FetchSeatMap(request entities.FetchSeatMapRequest) ([]int, error) {
+	var seats []int
+	err := r.db.Model(&entities.Passenger{}).
+		Select("seat").
+		Where("flight_id", request.FlightID).
+		Find(&seats).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return seats, nil
+}

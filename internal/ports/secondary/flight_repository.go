@@ -11,4 +11,5 @@ type FlightRepository interface {
 	GetAllActiveFlights() ([]entities.Flight, error)
 	CancelFlight(request entities.CancelFlightRequest) error
 	AddFlight(request entities.AddFlightRequest) error
+	FetchSeatMap(request entities.FetchSeatMapRequest) ([]int, error)
 }
