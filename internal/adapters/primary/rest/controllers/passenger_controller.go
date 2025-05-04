@@ -124,3 +124,20 @@ func (c *PassengerController) EmployeeCheckInPassenger(ctx *fiber.Ctx) error {
 		Msg("Successfully checked in passenger")
 	return ctx.Status(http.StatusOK).JSON(passenger)
 }
+
+func (c *PassengerController) CancelPassenger(ctx *fiber.Ctx) error {
+	var request entities.CancelPassengerRequest
+	if err := ctx.BodyParser(&request); err != nil {
+		log.Error().Err(err).Msg("Error parsing JSON body")
+		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+	}
+
+	err := c.service.CancelPassenger(request)
+	if err != nil {
+		log.Error().Err(err).Uint("passenger_id", request.PassengerID).Msg("Error canceling passenger")
+		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error canceling passenger"})
+	}
+
+	log.Info().Uint("passenger_id", request.PassengerID).Msg("Successfully canceled passenger")
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Passenger canceled successfully"})
+}

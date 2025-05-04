@@ -75,3 +75,12 @@ func (s *FlightService) AddFlight(request entities.AddFlightRequest) error {
 	log.Info().Msg("Successfully added flight")
 	return nil
 }
+
+func (s *FlightService) FetchSeatMap(request entities.FetchSeatMapRequest) ([]int, error) {
+	seats, err := s.repo.FetchSeatMap(request)
+	if err != nil {
+		log.Error().Err(err).Str("flight_number", request.FlightID).Msg("Error fetching seat map")
+		return nil, err
+	}
+	return seats, nil
+}

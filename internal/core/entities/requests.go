@@ -33,6 +33,10 @@ type CreatePassengerRequest struct {
 	Passenger Passenger
 }
 
+type CancelPassengerRequest struct {
+	PassengerID uint `json:"passenger_id" binding:"required"`
+}
+
 /* Employee */
 type RegisterEmployeeRequest struct {
 	NationalID string    `json:"national_id"`
@@ -96,6 +100,10 @@ type GetAllFlightsDestinationDateRequest struct {
 	DepartureAirport   string `query:"departure_airport" binding:"required,len=3,alpha"`
 	DestinationAirport string `query:"destination_airport" binding:"required,len=3,alpha"`
 	DepartureDateTime  string `query:"departure_datetime" binding:"required,datetime=2006-01-02"`
+}
+
+type FetchSeatMapRequest struct {
+	FlightID string `query:"flight_ID" binding:"required"`
 }
 
 /* User */

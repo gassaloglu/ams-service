@@ -71,3 +71,15 @@ func (r *PassengerRepositoryImpl) EmployeeCheckInPassenger(request entities.Empl
 	// TODO
 	return entities.Passenger{}, errors.ErrUnsupported
 }
+
+func (r *PassengerRepositoryImpl) CancelPassenger(request entities.CancelPassengerRequest) error {
+	result := r.db.Model(&entities.Passenger{}).
+		Where("id = ?", request.PassengerID).
+		Update("status", "inactive")
+
+	if result.RowsAffected == 0 {
+		return errors.New("no passenger found with the given ID")
+	}
+
+	return result.Error
+}

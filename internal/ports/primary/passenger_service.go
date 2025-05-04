@@ -12,4 +12,5 @@ type PassengerService interface {
 	CreatePassenger(request entities.CreatePassengerRequest) error
 	GetAllPassengers() ([]entities.Passenger, error)
 	EmployeeCheckInPassenger(request entities.EmployeeCheckInRequest) (entities.Passenger, error)
+	CancelPassenger(request entities.CancelPassengerRequest) error
 }
