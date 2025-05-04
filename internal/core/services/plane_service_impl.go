@@ -14,18 +14,21 @@ func NewPlaneService(repo secondary.PlaneRepository) primary.PlaneService {
 	return &PlaneService{repo: repo}
 }
 
-func (s *PlaneService) GetAllPlanes(request entities.GetAllPlanesRequest) ([]entities.Plane, error) {
-	return s.repo.GetAllPlanes(request)
+func (s *PlaneService) FindAll(request *entities.GetAllPlanesRequest) ([]entities.Plane, error) {
+	return s.repo.FindAll(request)
 }
 
-func (s *PlaneService) GetPlaneByRegistration(request entities.GetPlaneByRegistrationRequest) (entities.Plane, error) {
-	return s.repo.GetPlaneByRegistration(request)
+func (s *PlaneService) Create(request *entities.CreatePlaneRequest) (*entities.Plane, error) {
+	plane := mapCreatePlaneRequestToPlaneEntity(request)
+	return s.repo.Create(plane)
 }
 
-func (s *PlaneService) AddPlane(request entities.AddPlaneRequest) error {
-	return s.repo.AddPlane(request)
-}
-
-func (s *PlaneService) SetPlaneStatus(request entities.SetPlaneStatusRequest) error {
-	return s.repo.SetPlaneStatus(request)
+func mapCreatePlaneRequestToPlaneEntity(request *entities.CreatePlaneRequest) *entities.Plane {
+	return &entities.Plane{
+		Registration: request.Registration,
+		Model:        request.Model,
+		Manufacturer: request.Manufacturer,
+		Capacity:     request.Capacity,
+		Status:       request.Status,
+	}
 }

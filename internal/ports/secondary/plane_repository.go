@@ -5,8 +5,6 @@ import (
 )
 
 type PlaneRepository interface {
-	GetAllPlanes(request entities.GetAllPlanesRequest) ([]entities.Plane, error)
-	GetPlaneByRegistration(request entities.GetPlaneByRegistrationRequest) (entities.Plane, error)
-	AddPlane(request entities.AddPlaneRequest) error
-	SetPlaneStatus(request entities.SetPlaneStatusRequest) error
+	FindAll(request *entities.GetAllPlanesRequest) ([]entities.Plane, error)
+	Create(plane *entities.Plane) (*entities.Plane, error)
 }
