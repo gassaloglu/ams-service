@@ -5,11 +5,10 @@ import (
 )
 
 type FlightService interface {
-	GetSpecificFlight(request entities.GetSpecificFlightRequest) (entities.Flight, error)
-	GetAllFlights() ([]entities.Flight, error)
-	GetAllFlightsDestinationDateFlights(request entities.GetAllFlightsDestinationDateRequest) ([]entities.Flight, error)
-	GetAllActiveFlights() ([]entities.Flight, error)
-	CancelFlight(request entities.CancelFlightRequest) error
-	AddFlight(request entities.AddFlightRequest) error
-	FetchSeatMap(request entities.FetchSeatMapRequest) ([]int, error)
+	FindAll() ([]entities.Flight, error)
+	FindAllActive() ([]entities.Flight, error)
+	FindById(request *entities.GetFlightByIdRequest) (*entities.Flight, error)
+	Create(request *entities.CreateFlightRequest) error
+	CreateAll(requests []entities.CreateFlightRequest) error
+	FindSeatsByFlightId(request *entities.GetSeatsByFlightIdRequest) ([]int, error)
 }

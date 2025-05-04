@@ -3,6 +3,7 @@ package controllers
 import (
 	"ams-service/internal/core/entities"
 	"ams-service/internal/ports/primary"
+	"ams-service/internal/utils"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -24,7 +25,7 @@ func (c *PlaneController) GetAllPlanes(ctx *fiber.Ctx) error {
 		return fiber.NewError(http.StatusBadRequest, "Error binding query")
 	}
 
-	planes, err := c.service.GetAllPlanes(query)
+	planes, err := c.service.FindAll(&query)
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting all planes")
 		return fiber.NewError(http.StatusInternalServerError, "Error getting all planes")
@@ -35,62 +36,38 @@ func (c *PlaneController) GetAllPlanes(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusOK).JSON(planes)
 }
 
-func (c *PlaneController) AddPlane(ctx *fiber.Ctx) error {
-	var request entities.AddPlaneRequest
-	if err := ctx.BodyParser(&request); err != nil {
-		log.Error().Err(err).Msg("Error binding JSON")
-		return fiber.NewError(http.StatusBadRequest, "Error binding query")
+func (c *PlaneController) CreatePlane(ctx *fiber.Ctx) error {
+	if utils.IsBatchRequest(ctx) {
+		var request []entities.CreatePlaneRequest
+		if err := ctx.BodyParser(&request); err != nil {
+			log.Error().Err(err).Msg("Error binding JSON")
+			return fiber.NewError(http.StatusBadRequest, "Error binding JSON")
+		}
+
+		err := c.service.CreateAll(request)
+		if err != nil {
+			log.Error().Err(err).Msg("Error adding planes")
+			return fiber.NewError(http.StatusInternalServerError, "Error adding planes")
+		}
+
+		log.Info().Msgf("Successfully added plane(s)")
+
+		return ctx.SendStatus(http.StatusCreated)
+	} else {
+		var request entities.CreatePlaneRequest
+		if err := ctx.BodyParser(&request); err != nil {
+			log.Error().Err(err).Msg("Error binding JSON")
+			return fiber.NewError(http.StatusBadRequest, "Error binding JSON")
+		}
+
+		plane, err := c.service.Create(&request)
+		if err != nil {
+			log.Error().Err(err).Msg("Error adding plane")
+			return fiber.NewError(http.StatusInternalServerError, "Error adding plane")
+		}
+
+		log.Info().Msgf("Successfully added plane(s)")
+
+		return ctx.Status(http.StatusCreated).JSON(plane)
 	}
-
-	err := c.service.AddPlane(request)
-	if err != nil {
-		log.Error().Err(err).Msg("Error adding plane")
-		return fiber.NewError(http.StatusInternalServerError, "Error adding plane")
-	}
-
-	log.Info().Msgf("Successfully added plane(s)")
-
-	return ctx.SendStatus(http.StatusCreated)
-}
-
-func (c *PlaneController) SetPlaneStatus(ctx *fiber.Ctx) error {
-	var request entities.SetPlaneStatusRequest
-
-	if err := ctx.ParamsParser(&request); err != nil {
-		log.Error().Err(err).Msg("Error binding JSON")
-		return fiber.NewError(http.StatusBadRequest, "Error binding query")
-	}
-
-	if err := ctx.BodyParser(&request); err != nil {
-		log.Error().Err(err).Msg("Error binding JSON")
-		return fiber.NewError(http.StatusBadRequest, "Error binding query")
-	}
-
-	err := c.service.SetPlaneStatus(request)
-	if err != nil {
-		log.Error().Err(err).Msg("Error setting plane status")
-		return fiber.NewError(http.StatusInternalServerError, "Error setting plane status")
-	}
-
-	log.Info().Msgf("Successfully set plane status")
-
-	return ctx.SendStatus(http.StatusOK)
-}
-
-func (c *PlaneController) GetPlaneByRegistration(ctx *fiber.Ctx) error {
-	var request entities.GetPlaneByRegistrationRequest
-	if err := ctx.ParamsParser(&request); err != nil {
-		log.Error().Err(err).Msg("Error binding query")
-		return fiber.NewError(http.StatusBadRequest, "Error binding query")
-	}
-
-	plane, err := c.service.GetPlaneByRegistration(request)
-	if err != nil {
-		log.Error().Err(err).Str("registration", request.Registration).Msg("Error getting plane by registration")
-		return fiber.NewError(http.StatusInternalServerError, "Error getting plane by registration")
-	}
-
-	log.Info().Str("registration", request.Registration).Msg("Successfully retrieved plane by registration")
-
-	return ctx.Status(http.StatusOK).JSON(plane)
 }
