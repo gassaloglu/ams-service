@@ -4,6 +4,7 @@ import "time"
 
 type Passenger struct {
 	ID               uint      `json:"id" gorm:"primaryKey;autoIncrement"`
+	Status           string    `json:"status" gorm:"type:status_enum;not null"`
 	NationalId       string    `json:"national_id" gorm:"size:11;not null"`
 	PnrNo            string    `json:"pnr_no" gorm:"size:6;unique;not null"`
 	FlightId         int       `json:"flight_id" gorm:"not null;foreignKey:id;references:flights;constraint:OnDelete:RESTRICT"`

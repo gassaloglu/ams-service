@@ -91,3 +91,13 @@ func (s *PassengerService) EmployeeCheckInPassenger(request entities.EmployeeChe
 		Msg("Successfully checked in passenger")
 	return passenger, nil
 }
+
+func (s *PassengerService) CancelPassenger(request entities.CancelPassengerRequest) error {
+	err := s.repo.CancelPassenger(request)
+	if err != nil {
+		log.Error().Err(err).Uint("passenger_id", request.PassengerID).Msg("Error canceling passenger")
+		return err
+	}
+	log.Info().Uint("passenger_id", request.PassengerID).Msg("Successfully canceled passenger")
+	return nil
+}

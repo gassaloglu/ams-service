@@ -33,6 +33,10 @@ type CreatePassengerRequest struct {
 	Passenger Passenger
 }
 
+type CancelPassengerRequest struct {
+	PassengerID uint `json:"passenger_id" binding:"required"`
+}
+
 /* Employee */
 type RegisterEmployeeRequest struct {
 	NationalID string    `json:"national_id"`

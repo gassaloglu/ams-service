@@ -70,6 +70,7 @@ func (r *FlightRepositoryImpl) FetchSeatMap(request entities.FetchSeatMapRequest
 	err := r.db.Model(&entities.Passenger{}).
 		Select("seat").
 		Where("flight_id", request.FlightID).
+		Where("status", "active").
 		Find(&seats).Error
 
 	if err != nil {
