@@ -6,6 +6,7 @@ import (
 	"ams-service/internal/ports/secondary"
 
 	"github.com/lib/pq"
+	"github.com/sourcegraph/conc/iter"
 )
 
 type FlightService struct {
@@ -30,15 +31,20 @@ func (s *FlightService) FindAll() ([]entities.Flight, error) {
 
 func (s *FlightService) Create(request *entities.CreateFlightRequest) error {
 	flight := mapCreateFlightRequestToFlight(request)
-	return s.repo.Create(flight)
+	return s.repo.Create(&flight)
+}
+
+func (s *FlightService) CreateAll(requests []entities.CreateFlightRequest) error {
+	flights := iter.Map(requests, mapCreateFlightRequestToFlight)
+	return s.repo.CreateAll(flights)
 }
 
 func (s *FlightService) FindSeatsByFlightId(request *entities.GetSeatsByFlightIdRequest) ([]int, error) {
 	return s.repo.FindSeatsByFlightId(request.ID)
 }
 
-func mapCreateFlightRequestToFlight(request *entities.CreateFlightRequest) *entities.Flight {
-	return &entities.Flight{
+func mapCreateFlightRequestToFlight(request *entities.CreateFlightRequest) entities.Flight {
+	return entities.Flight{
 		FlightNumber:          request.FlightNumber,
 		DepartureAirport:      request.DepartureAirport,
 		DestinationAirport:    request.DestinationAirport,

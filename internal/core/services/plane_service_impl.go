@@ -4,6 +4,8 @@ import (
 	"ams-service/internal/core/entities"
 	"ams-service/internal/ports/primary"
 	"ams-service/internal/ports/secondary"
+
+	"github.com/sourcegraph/conc/iter"
 )
 
 type PlaneService struct {
@@ -20,11 +22,16 @@ func (s *PlaneService) FindAll(request *entities.GetAllPlanesRequest) ([]entitie
 
 func (s *PlaneService) Create(request *entities.CreatePlaneRequest) (*entities.Plane, error) {
 	plane := mapCreatePlaneRequestToPlaneEntity(request)
-	return s.repo.Create(plane)
+	return s.repo.Create(&plane)
 }
 
-func mapCreatePlaneRequestToPlaneEntity(request *entities.CreatePlaneRequest) *entities.Plane {
-	return &entities.Plane{
+func (s *PlaneService) CreateAll(requests []entities.CreatePlaneRequest) error {
+	planes := iter.Map(requests, mapCreatePlaneRequestToPlaneEntity)
+	return s.repo.CreateAll(planes)
+}
+
+func mapCreatePlaneRequestToPlaneEntity(request *entities.CreatePlaneRequest) entities.Plane {
+	return entities.Plane{
 		Registration: request.Registration,
 		Model:        request.Model,
 		Manufacturer: request.Manufacturer,

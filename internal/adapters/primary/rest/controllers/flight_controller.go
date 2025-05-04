@@ -3,6 +3,7 @@ package controllers
 import (
 	"ams-service/internal/core/entities"
 	"ams-service/internal/ports/primary"
+	"ams-service/internal/utils"
 	"errors"
 	"net/http"
 
@@ -71,20 +72,38 @@ func (c *FlightController) GetAllActiveFlights(ctx *fiber.Ctx) error {
 }
 
 func (c *FlightController) CreateFlight(ctx *fiber.Ctx) error {
-	// Parse the request body
-	var request entities.CreateFlightRequest
-	if err := ctx.BodyParser(&request); err != nil {
-		log.Error().Err(err).Msg("Error binding JSON")
-		return fiber.NewError(http.StatusBadRequest, "Invalid request payload")
-	}
+	if utils.IsBatchRequest(ctx) {
+		var requests []entities.CreateFlightRequest
+		if err := ctx.BodyParser(&requests); err != nil {
+			log.Error().Err(err).Msg("Error binding JSON")
+			return fiber.NewError(http.StatusBadRequest, "Invalid request payload")
+		}
 
-	// Call the service to add the flight
-	err := c.service.Create(&request)
-	if err != nil {
-		log.Error().Err(err).Msg("Error adding flight")
-		return fiber.NewError(fiber.StatusInternalServerError, "Error adding flight")
-	}
+		// Call the service to add the flight
+		err := c.service.CreateAll(requests)
+		if err != nil {
+			log.Error().Err(err).Msg("Error adding flights")
+			return fiber.NewError(fiber.StatusInternalServerError, "Error adding flights")
+		}
 
-	log.Info().Msg("Successfully added flight")
-	return ctx.Status(http.StatusCreated).JSON(fiber.Map{"message": "Flight added successfully"})
+		log.Info().Msg("Successfully added flights")
+		return ctx.SendStatus(http.StatusCreated)
+	} else {
+		// Parse the request body
+		var request entities.CreateFlightRequest
+		if err := ctx.BodyParser(&request); err != nil {
+			log.Error().Err(err).Msg("Error binding JSON")
+			return fiber.NewError(http.StatusBadRequest, "Invalid request payload")
+		}
+
+		// Call the service to add the flight
+		err := c.service.Create(&request)
+		if err != nil {
+			log.Error().Err(err).Msg("Error adding flight")
+			return fiber.NewError(fiber.StatusInternalServerError, "Error adding flight")
+		}
+
+		log.Info().Msg("Successfully added flight")
+		return ctx.SendStatus(http.StatusCreated)
+	}
 }

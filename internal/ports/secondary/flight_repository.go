@@ -9,5 +9,6 @@ type FlightRepository interface {
 	FindAll() ([]entities.Flight, error)
 	FindAllActive() ([]entities.Flight, error)
 	Create(flight *entities.Flight) error
+	CreateAll(flights []entities.Flight) error
 	FindSeatsByFlightId(id string) ([]int, error)
 }

@@ -10,6 +10,4 @@ func RegisterPlaneRoutes(app *fiber.App, planeController *controllers.PlaneContr
 	planeRoute := app.Group("/planes")
 	planeRoute.Get("/", planeController.GetAllPlanes)
 	planeRoute.Post("/", planeController.CreatePlane)
-	planeRoute.Patch("/:registration", planeController.SetPlaneStatus)
-	planeRoute.Get("/:registration", planeController.GetPlaneByRegistration)
 }

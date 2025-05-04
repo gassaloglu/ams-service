@@ -7,4 +7,5 @@ import (
 type PlaneService interface {
 	FindAll(*entities.GetAllPlanesRequest) ([]entities.Plane, error)
 	Create(request *entities.CreatePlaneRequest) (*entities.Plane, error)
+	CreateAll(requests []entities.CreatePlaneRequest) error
 }

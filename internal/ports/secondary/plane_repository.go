@@ -7,4 +7,5 @@ import (
 type PlaneRepository interface {
 	FindAll(request *entities.GetAllPlanesRequest) ([]entities.Plane, error)
 	Create(plane *entities.Plane) (*entities.Plane, error)
+	CreateAll(planes []entities.Plane) error
 }

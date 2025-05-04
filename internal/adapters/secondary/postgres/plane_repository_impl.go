@@ -16,7 +16,7 @@ func NewPlaneRepositoryImpl(db *gorm.DB) secondary.PlaneRepository {
 	return &PlaneRepositoryImpl{db: db}
 }
 
-func (r *PlaneRepositoryImpl) FindAll(req entities.GetAllPlanesRequest) ([]entities.Plane, error) {
+func (r *PlaneRepositoryImpl) FindAll(req *entities.GetAllPlanesRequest) ([]entities.Plane, error) {
 	var planes []entities.Plane
 	result := r.db.Find(&planes)
 	return planes, result.Error
@@ -26,4 +26,11 @@ func (r *PlaneRepositoryImpl) Create(plane *entities.Plane) (*entities.Plane, er
 	clone := *plane
 	result := r.db.Create(&clone)
 	return &clone, result.Error
+}
+
+func (r *PlaneRepositoryImpl) CreateAll(planes []entities.Plane) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		result := tx.Create(planes)
+		return result.Error
+	})
 }

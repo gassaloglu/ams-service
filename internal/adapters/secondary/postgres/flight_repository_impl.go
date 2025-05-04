@@ -43,6 +43,13 @@ func (r *FlightRepositoryImpl) Create(flight *entities.Flight) error {
 	return result.Error
 }
 
+func (r *FlightRepositoryImpl) CreateAll(flights []entities.Flight) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		result := r.db.Create(flights)
+		return result.Error
+	})
+}
+
 func (r *FlightRepositoryImpl) FindSeatsByFlightId(id string) ([]int, error) {
 	var seats []int
 
