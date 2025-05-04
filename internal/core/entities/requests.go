@@ -84,26 +84,23 @@ type GetPlaneByLocationRequest struct {
 }
 
 /* Flight */
-type GetSpecificFlightRequest struct {
-	FlightNumber      string `query:"flight_number"`
-	DepartureDateTime string `query:"departure_datetime"`
+type GetFlightByIdRequest struct {
+	ID string `params:"id" binding:"required"`
+}
+type CreateFlightRequest struct {
+	FlightNumber          string    `json:"flight_number"`
+	DepartureAirport      string    `json:"departure_airport"`
+	DestinationAirport    string    `json:"destination_airport"`
+	DepartureDatetime     time.Time `json:"departure_datetime"`
+	ArrivalDatetime       time.Time `json:"arrival_datetime"`
+	DepartureGateNumber   string    `json:"departure_gate_number"`
+	DestinationGateNumber string    `json:"destination_gate_number"`
+	PlaneRegistration     string    `json:"plane_registration"`
+	Price                 float64   `json:"price"`
 }
 
-type CancelFlightRequest struct {
-	FlightNumber string `json:"flight_number" binding:"required"`
-	FlightDate   string `json:"flight_date" binding:"required,datetime=2006-01-02"`
-}
-
-type AddFlightRequest []Flight
-
-type GetAllFlightsDestinationDateRequest struct {
-	DepartureAirport   string `query:"departure_airport" binding:"required,len=3,alpha"`
-	DestinationAirport string `query:"destination_airport" binding:"required,len=3,alpha"`
-	DepartureDateTime  string `query:"departure_datetime" binding:"required,datetime=2006-01-02"`
-}
-
-type FetchSeatMapRequest struct {
-	FlightID string `query:"flight_ID" binding:"required"`
+type GetSeatsByFlightIdRequest struct {
+	ID string `params:"id" binding:"required"`
 }
 
 /* User */

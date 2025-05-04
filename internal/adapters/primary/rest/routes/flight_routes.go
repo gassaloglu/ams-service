@@ -8,17 +8,15 @@ import (
 )
 
 func RegisterFlightRoutes(app *fiber.App, flightController *controllers.FlightController) {
-	flightRoute := app.Group("/flight")
+	flightRoute := app.Group("/flights")
 
 	// Generally available routes for authenticated requests
 	{
 		group := flightRoute.Group("/")
 		group.Use(middlewares.Protection())
 
-		group.Get("/", flightController.GetSpecificFlight)
-		group.Get("/destination-date", flightController.GetAllFlightsDestinationDateFlights)
-		group.Get("/seat-map", flightController.FetchSeatMap)
-
+		group.Get("/", flightController.GetAllActiveFlights)
+		group.Get("/:id", flightController.GetFlightById)
 	}
 
 	// Admin, flight planner, passenger services, and ground services routes
@@ -32,8 +30,7 @@ func RegisterFlightRoutes(app *fiber.App, flightController *controllers.FlightCo
 			middlewares.GroundServicesRole},
 		))
 
-		group.Get("/all", flightController.GetAllFlights)
-		group.Get("/active", flightController.GetAllActiveFlights)
+		// group.Get("/", flightController.GetAllFlights)
 	}
 
 	// Admin and flight planner routes
@@ -45,7 +42,6 @@ func RegisterFlightRoutes(app *fiber.App, flightController *controllers.FlightCo
 			middlewares.FlightPlannerRole},
 		))
 
-		group.Patch("/cancel", flightController.CancelFlight)
-		group.Post("/add", flightController.AddFlight)
+		group.Post("/", flightController.CreateFlight)
 	}
 }

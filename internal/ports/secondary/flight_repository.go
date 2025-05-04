@@ -5,11 +5,9 @@ import (
 )
 
 type FlightRepository interface {
-	GetSpecificFlight(request entities.GetSpecificFlightRequest) (entities.Flight, error)
-	GetAllFlights() ([]entities.Flight, error)
-	GetAllFlightsDestinationDateFlights(request entities.GetAllFlightsDestinationDateRequest) ([]entities.Flight, error)
-	GetAllActiveFlights() ([]entities.Flight, error)
-	CancelFlight(request entities.CancelFlightRequest) error
-	AddFlight(request entities.AddFlightRequest) error
-	FetchSeatMap(request entities.FetchSeatMapRequest) ([]int, error)
+	FindById(id string) (*entities.Flight, error)
+	FindAll() ([]entities.Flight, error)
+	FindAllActive() ([]entities.Flight, error)
+	Create(flight *entities.Flight) error
+	FindSeatsByFlightId(id string) ([]int, error)
 }
