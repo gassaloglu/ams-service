@@ -3,7 +3,6 @@ package postgres
 import (
 	"ams-service/internal/core/entities"
 
-	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
@@ -12,27 +11,44 @@ type BankRepositoryImpl struct {
 }
 
 func NewBankRepositoryImpl(db *gorm.DB) *BankRepositoryImpl {
-	db.AutoMigrate(&entities.CreditCard{}, &entities.Refund{})
+	db.AutoMigrate(&entities.CreditCard{}, &entities.Transaction{})
 	return &BankRepositoryImpl{db: db}
 }
 
-func (r *BankRepositoryImpl) AddCreditCard(card entities.CreditCard) error {
-	result := r.db.Create(&card)
-	return result.Error
+func (r *BankRepositoryImpl) CreateCreditCard(card *entities.CreditCard) (*entities.CreditCard, error) {
+	err := r.db.Create(card).Error
+	return card, err
 }
 
-func (r *BankRepositoryImpl) GetAllCreditCards() ([]entities.CreditCard, error) {
-	var cards []entities.CreditCard
-	result := r.db.Find(&cards)
-	return cards, result.Error
+func (r *BankRepositoryImpl) FindCreditCard(info *entities.CreditCardInfo) (entities.CreditCard, error) {
+	var card entities.CreditCard
+
+	result := r.db.
+		Where("card_number", info.CardNumber).
+		Where("card_holder_name", info.CardHolderName).
+		Where("card_holder_surname", info.CardHolderSurname).
+		Where("expiration_month", info.ExpirationMonth).
+		Where("expiration_year", info.ExpirationYear).
+		Where("cvv", info.CVV).
+		Find(&card)
+
+	return card, result.Error
 }
 
-func (r *BankRepositoryImpl) Pay(request entities.PaymentRequest) error {
-	log.Fatal().Msg("todo: pay")
-	return nil
+func (r *BankRepositoryImpl) UpdateCreditCard(card *entities.CreditCard) (*entities.CreditCard, error) {
+	clone := *card
+	err := r.db.Save(clone).Error
+	return &clone, err
 }
 
-func (r *BankRepositoryImpl) Refund(request entities.Refund) error {
-	log.Fatal().Msg("todo: refund")
-	return nil
+func (r *BankRepositoryImpl) CreateTransaction(transaction *entities.Transaction) (*entities.Transaction, error) {
+	clone := *transaction
+	err := r.db.Create(clone).Error
+	return &clone, err
+}
+
+func (r *BankRepositoryImpl) FindTransactionById(id string) (*entities.Transaction, error) {
+	var transaction entities.Transaction
+	err := r.db.First(&transaction, "id = ?", id).Error
+	return &transaction, err
 }

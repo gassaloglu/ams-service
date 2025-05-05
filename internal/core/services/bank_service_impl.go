@@ -4,8 +4,7 @@ import (
 	"ams-service/internal/core/entities"
 	"ams-service/internal/ports/primary"
 	"ams-service/internal/ports/secondary"
-
-	"github.com/rs/zerolog/log"
+	"errors"
 )
 
 type BankServiceImpl struct {
@@ -16,38 +15,67 @@ func NewBankService(repo secondary.BankRepository) primary.BankService {
 	return &BankServiceImpl{repo: repo}
 }
 
-func (s *BankServiceImpl) AddCreditCard(card entities.CreditCard) error {
-	err := s.repo.AddCreditCard(card)
-	if err != nil {
-		log.Error().Err(err).Msg("Error adding credit card")
-		return err
-	}
-	return nil
+func (s *BankServiceImpl) CreateCreditCard(request *entities.CreateCreditCardRequest) (*entities.CreditCard, error) {
+	card := mapCreateCreditCardRequestToCreditCardEntity(request)
+	return s.repo.CreateCreditCard(&card)
 }
 
-func (s *BankServiceImpl) GetAllCreditCards() ([]entities.CreditCard, error) {
-	cards, err := s.repo.GetAllCreditCards()
+func (s *BankServiceImpl) Pay(request *entities.PaymentRequest) (*entities.Transaction, error) {
+	card, err := s.repo.FindCreditCard(&request.CreditCard)
+
 	if err != nil {
-		log.Error().Err(err).Msg("Error getting credit cards")
 		return nil, err
 	}
-	return cards, nil
+
+	if request.Amount <= 0 {
+		return nil, errors.New("invalid amount")
+	}
+
+	if card.Balance < request.Amount {
+		return nil, errors.New("insufficient balance")
+	}
+
+	card.Balance -= request.Amount
+
+	_, err = s.repo.UpdateCreditCard(&card)
+
+	transaction, err := s.repo.CreateTransaction(&entities.Transaction{
+		CreditCardID: card.ID,
+		Amount:       request.Amount,
+		Type:         "credit",
+	})
+
+	return transaction, err
 }
 
-func (s *BankServiceImpl) Pay(request entities.PaymentRequest) error {
-	err := s.repo.Pay(request)
+func (s *BankServiceImpl) Refund(request *entities.RefundRequest) (*entities.Transaction, error) {
+	transaction, err := s.repo.FindTransactionById(request.TransactionID)
+
 	if err != nil {
-		log.Error().Err(err).Msg("Error processing payment")
-		return err
+		return nil, err
 	}
-	return nil
+
+	if transaction.Type != "credit" {
+		return nil, errors.New("transaction is not refundable")
+	}
+
+	transaction, err = s.repo.CreateTransaction(&entities.Transaction{
+		CreditCardID: transaction.CreditCardID,
+		Amount:       transaction.Amount,
+		Type:         "refund",
+	})
+
+	return transaction, err
 }
 
-func (s *BankServiceImpl) Refund(request entities.Refund) error {
-	err := s.repo.Refund(request)
-	if err != nil {
-		log.Error().Err(err).Msg("Error processing refund")
-		return err
+func mapCreateCreditCardRequestToCreditCardEntity(request *entities.CreateCreditCardRequest) entities.CreditCard {
+	return entities.CreditCard{
+		CardNumber:        request.CardNumber,
+		CardHolderName:    request.CardHolderName,
+		CardHolderSurname: request.CardHolderSurname,
+		ExpirationMonth:   request.ExpirationMonth,
+		ExpirationYear:    request.ExpirationYear,
+		CVV:               request.CVV,
+		Balance:           0,
 	}
-	return nil
 }
