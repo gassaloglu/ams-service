@@ -5,8 +5,8 @@ import (
 )
 
 type FlightService interface {
-	FindAll() ([]entities.Flight, error)
-	FindAllActive() ([]entities.Flight, error)
+	FindAll(*entities.GetAllFlightsRequest) ([]entities.Flight, error)
+	FindAllActive(*entities.GetAllFlightsRequest) ([]entities.Flight, error)
 	FindById(request *entities.GetFlightByIdRequest) (*entities.Flight, error)
 	Create(request *entities.CreateFlightRequest) error
 	CreateAll(requests []entities.CreateFlightRequest) error

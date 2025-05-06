@@ -20,6 +20,7 @@ import (
 	"github.com/rs/zerolog/log"
 	pg "gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func Run() {
@@ -126,7 +127,9 @@ func setupDatabaseConnection(cfg *config.Config) (*gorm.DB, error) {
 	switch cfg.Database.Type {
 	case "postgres":
 		dsn := buildDsn(&cfg.Database)
-		return gorm.Open(pg.Open(dsn), &gorm.Config{})
+		return gorm.Open(pg.Open(dsn), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Info),
+		})
 	default:
 		return nil, errors.New("unsupported database type")
 	}

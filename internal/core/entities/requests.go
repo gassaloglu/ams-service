@@ -4,6 +4,16 @@ import (
 	"time"
 )
 
+/* Util */
+type Comparable[T comparable] struct {
+	GreaterThan          *T `query:"gt"`
+	LessThan             *T `query:"lt"`
+	EqualTo              *T `query:"eq"`
+	GreaterThanOrEqualTo *T `query:"gte"`
+	LessThanOrEqualTo    *T `query:"lte"`
+	NotEqaualTo          *T `query:"neq"`
+}
+
 /* Passenger */
 type GetPassengerByIdRequest struct {
 	NationalId string `query:"national_id" binding:"required,len=11,numeric"`
@@ -73,6 +83,16 @@ type GetAllPlanesRequest struct {
 }
 
 /* Flight */
+type GetAllFlightsRequest struct {
+	ID                 []uint                 `query:"id"`
+	FlightNumber       []string               `query:"flight_number"`
+	DepartureAirport   []string               `query:"departure_airport"`
+	DestinationAirport []string               `query:"destination_airport"`
+	DepartureDatetime  *Comparable[time.Time] `query:"departure_datetime"`
+	Status             []string               `query:"status"`
+	Price              *Comparable[float64]   `query:"price"`
+}
+
 type GetFlightByIdRequest struct {
 	ID string `params:"id" binding:"required"`
 }

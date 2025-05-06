@@ -3,6 +3,8 @@ package postgres
 import (
 	"ams-service/internal/core/entities"
 	"ams-service/internal/ports/secondary"
+	"ams-service/internal/utils"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -26,15 +28,19 @@ func (r *FlightRepositoryImpl) FindById(id string) (*entities.Flight, error) {
 	return &flight, result.Error
 }
 
-func (r *FlightRepositoryImpl) FindAll() ([]entities.Flight, error) {
+func (r *FlightRepositoryImpl) FindAll(request *entities.GetAllFlightsRequest) ([]entities.Flight, error) {
 	var flights []entities.Flight
-	result := r.db.Find(&flights)
+	result := buildFindAllFlightsQuery(r.db, request).Find(&flights)
 	return flights, result.Error
 }
 
-func (r *FlightRepositoryImpl) FindAllActive() ([]entities.Flight, error) {
+func (r *FlightRepositoryImpl) FindAllActive(request *entities.GetAllFlightsRequest) ([]entities.Flight, error) {
 	var flights []entities.Flight
-	result := r.db.Where("status", "scheduled").Or("status", "delayed").Find(&flights)
+
+	result := buildFindAllFlightsQuery(r.db, request).
+		Where("status", "scheduled").
+		Find(&flights)
+
 	return flights, result.Error
 }
 
@@ -61,4 +67,36 @@ func (r *FlightRepositoryImpl) FindSeatsByFlightId(id string) ([]int, error) {
 		Find(&seats)
 
 	return seats, result.Error
+}
+
+func buildFindAllFlightsQuery(db *gorm.DB, request *entities.GetAllFlightsRequest) *gorm.DB {
+	if len(request.ID) > 0 {
+		db = db.Where("id IN ?", request.ID)
+	}
+
+	if len(request.FlightNumber) > 0 {
+		db = db.Where("flight_number IN ?", request.FlightNumber)
+	}
+
+	if len(request.DepartureAirport) > 0 {
+		db = db.Where("departure_airport IN ?", request.DepartureAirport)
+	}
+
+	if len(request.DestinationAirport) > 0 {
+		db = db.Where("destination_airport IN ?", request.DestinationAirport)
+	}
+
+	if request.DepartureDatetime != nil {
+		db = utils.BuildComparableQueryForField[time.Time](db, request.DepartureDatetime, "departure_datetime")
+	}
+
+	if len(request.Status) > 0 {
+		db = db.Where("status IN ?", request.Status)
+	}
+
+	if request.Price != nil {
+		db = utils.BuildComparableQueryForField[float64](db, request.Price, "price")
+	}
+
+	return db
 }
