@@ -5,8 +5,9 @@ import (
 )
 
 type BankRepository interface {
-	AddCreditCard(card entities.CreditCard) error
-	GetAllCreditCards() ([]entities.CreditCard, error)
-	Pay(request entities.PaymentRequest) error
-	Refund(request entities.Refund) error
+	CreateCreditCard(card *entities.CreditCard) (*entities.CreditCard, error)
+	FindCreditCard(info *entities.CreditCardInfo) (entities.CreditCard, error)
+	UpdateCreditCard(card *entities.CreditCard) (*entities.CreditCard, error)
+	CreateTransaction(transaction *entities.Transaction) (*entities.Transaction, error)
+	FindTransactionById(id string) (*entities.Transaction, error)
 }

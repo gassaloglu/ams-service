@@ -29,6 +29,11 @@ BEGIN
         CREATE TYPE flight_status_enum AS ENUM ('scheduled', 'delayed', 'cancelled', 'departed', 'arrived');
     END IF;
 
+    -- Create transaction_type_enum if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'transaction_type_enum') THEN
+        CREATE TYPE transaction_type_enum AS ENUM ('credit', 'debit', 'refund');
+    END IF;
+
 END$$;
 
 -- Create tables

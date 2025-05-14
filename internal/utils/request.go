@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"ams-service/internal/core/entities"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 // IsBatchRequest checks if the incoming request is a batch request.
@@ -28,4 +30,35 @@ func IsBatchRequest(c *fiber.Ctx) bool {
 
 	// Return the result.
 	return isBatch
+}
+
+func BuildComparableQueryForField[T comparable](db *gorm.DB, cmp *entities.Comparable[T], field string) *gorm.DB {
+	if (db == nil) || (cmp == nil) {
+		return db
+	}
+
+	if cmp.EqualTo != nil {
+		db = db.Where(field+" = ?", *cmp.EqualTo)
+	}
+
+	if cmp.NotEqaualTo != nil {
+		db = db.Where(field+" != ?", *cmp.NotEqaualTo)
+	}
+
+	if cmp.GreaterThan != nil {
+		db = db.Where(field+" > ?", *cmp.GreaterThan)
+	}
+
+	if cmp.LessThan != nil {
+		db = db.Where(field+" < ?", *cmp.LessThan)
+	}
+
+	if cmp.GreaterThanOrEqualTo != nil {
+		db = db.Where(field+" >= ?", *cmp.GreaterThanOrEqualTo)
+	}
+	if cmp.LessThanOrEqualTo != nil {
+		db = db.Where(field+" <= ?", *cmp.LessThanOrEqualTo)
+	}
+
+	return db
 }

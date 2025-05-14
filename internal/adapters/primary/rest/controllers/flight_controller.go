@@ -42,7 +42,13 @@ func (c *FlightController) GetFlightById(ctx *fiber.Ctx) error {
 }
 
 func (c *FlightController) GetAllFlights(ctx *fiber.Ctx) error {
-	flights, err := c.service.FindAll()
+	var request entities.GetAllFlightsRequest
+	if err := ctx.QueryParser(&request); err != nil {
+		log.Error().Err(err).Msg("Error binding query")
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid query params")
+	}
+
+	flights, err := c.service.FindAll(&request)
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting all flights")
 		return fiber.NewError(http.StatusInternalServerError, "Error getting all flights")
@@ -57,7 +63,13 @@ func (c *FlightController) GetAllFlights(ctx *fiber.Ctx) error {
 }
 
 func (c *FlightController) GetAllActiveFlights(ctx *fiber.Ctx) error {
-	flights, err := c.service.FindAllActive()
+	var request entities.GetAllFlightsRequest
+	if err := ctx.QueryParser(&request); err != nil {
+		log.Error().Err(err).Msg("Error binding query")
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid query params")
+	}
+
+	flights, err := c.service.FindAllActive(&request)
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting all flights")
 		return fiber.NewError(http.StatusInternalServerError, "Error getting all flights")

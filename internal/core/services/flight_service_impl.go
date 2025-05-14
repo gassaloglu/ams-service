@@ -21,12 +21,12 @@ func (s *FlightService) FindById(request *entities.GetFlightByIdRequest) (*entit
 	return s.repo.FindById(request.ID)
 }
 
-func (s *FlightService) FindAllActive() ([]entities.Flight, error) {
-	return s.repo.FindAllActive()
+func (s *FlightService) FindAllActive(request *entities.GetAllFlightsRequest) ([]entities.Flight, error) {
+	return s.repo.FindAllActive(request)
 }
 
-func (s *FlightService) FindAll() ([]entities.Flight, error) {
-	return s.repo.FindAll()
+func (s *FlightService) FindAll(request *entities.GetAllFlightsRequest) ([]entities.Flight, error) {
+	return s.repo.FindAll(request)
 }
 
 func (s *FlightService) Create(request *entities.CreateFlightRequest) error {
