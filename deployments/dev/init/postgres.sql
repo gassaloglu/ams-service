@@ -34,6 +34,8 @@ BEGIN
         CREATE TYPE transaction_type_enum AS ENUM ('credit', 'debit', 'refund');
     END IF;
 
+    
+
 END$$;
 
 -- Create tables

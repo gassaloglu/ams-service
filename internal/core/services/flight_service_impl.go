@@ -5,7 +5,6 @@ import (
 	"ams-service/internal/ports/primary"
 	"ams-service/internal/ports/secondary"
 
-	"github.com/lib/pq"
 	"github.com/sourcegraph/conc/iter"
 )
 
@@ -55,6 +54,5 @@ func mapCreateFlightRequestToFlight(request *entities.CreateFlightRequest) entit
 		PlaneRegistration:     request.PlaneRegistration,
 		Price:                 request.Price,
 		Status:                "scheduled",
-		Seats:                 pq.Int32Array{},
 	}
 }

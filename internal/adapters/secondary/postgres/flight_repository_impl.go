@@ -61,9 +61,11 @@ func (r *FlightRepositoryImpl) FindSeatsByFlightId(id string) ([]int, error) {
 
 	result := r.db.Model(&entities.Passenger{}).
 		Select("seat").
-		Where("id", id).
-		Where("status", "scheduled").
-		Or("status", "delayed").
+		Joins("JOIN flights ON flights.id = passengers.flight_id").
+		Where("passengers.status = ?", "active").
+		Where("flights.status = ?", "scheduled").
+		Where("flights.id = ?", id).
+		Order("seat").
 		Find(&seats)
 
 	return seats, result.Error

@@ -17,6 +17,7 @@ func RegisterFlightRoutes(app *fiber.App, flightController *controllers.FlightCo
 
 		group.Get("/", flightController.GetAllActiveFlights)
 		group.Get("/:id", flightController.GetFlightById)
+		group.Get("/:id/seats", flightController.GetSeatsByFlightId)
 	}
 
 	// Admin, flight planner, passenger services, and ground services routes

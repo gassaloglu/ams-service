@@ -119,3 +119,23 @@ func (c *FlightController) CreateFlight(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(http.StatusCreated)
 	}
 }
+
+func (c *FlightController) GetSeatsByFlightId(ctx *fiber.Ctx) error {
+	var request entities.GetSeatsByFlightIdRequest
+	if err := ctx.ParamsParser(&request); err != nil {
+		log.Error().Err(err).Msg("Error binding query")
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid URI params")
+	}
+
+	seats, err := c.service.FindSeatsByFlightId(&request)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Error().Err(err).Msg("Flight not found")
+		return fiber.NewError(fiber.StatusNotFound, "Flight not found")
+	} else if err != nil {
+		log.Error().Err(err).Msg("Error finding flight by id")
+		return fiber.NewError(fiber.StatusInternalServerError, "Error finding flight by id")
+	}
+
+	return ctx.Status(http.StatusOK).JSON(seats)
+}

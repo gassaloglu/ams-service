@@ -96,6 +96,7 @@ type GetAllFlightsRequest struct {
 type GetFlightByIdRequest struct {
 	ID string `params:"id" binding:"required"`
 }
+
 type CreateFlightRequest struct {
 	FlightNumber          string    `json:"flight_number"`
 	DepartureAirport      string    `json:"departure_airport"`
