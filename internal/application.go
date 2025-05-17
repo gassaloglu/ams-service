@@ -59,13 +59,13 @@ func Run() {
 	bankRepo := postgresAdapter.NewBankRepositoryImpl(db)
 
 	// Initialize services
+	bankService := services.NewBankService(bankRepo)
 	tokenService := services.NewTokenService(scfg.JWTSecretKey)
-	passengerService := services.NewPassengerService(passengerRepo)
 	userService := services.NewUserService(userRepo, tokenService)
 	planeService := services.NewPlaneService(planeRepo)
 	employeeService := services.NewEmployeeService(employeeRepo, tokenService)
 	flightService := services.NewFlightService(flightRepo)
-	bankService := services.NewBankService(bankRepo)
+	passengerService := services.NewPassengerService(passengerRepo, bankService, flightService)
 
 	// Initialize controllers
 	passengerController := controllers.NewPassengerController(passengerService)

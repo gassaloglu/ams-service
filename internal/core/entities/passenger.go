@@ -11,8 +11,8 @@ type Passenger struct {
 	// Ticket properties
 	PnrNo         string `json:"pnr_no" gorm:"size:6;unique;not null"`
 	CheckIn       bool   `json:"check_in" gorm:"not null"`
-	FlightId      int    `json:"flight_id" gorm:"not null;foreignKey:id;references:flights;constraint:OnDelete:RESTRICT"`
-	TransactionId int    `json:"transaction_id" gorm:"not null;foreignKey:id;references:transactions;constraint:OnDelete:RESTRICT"`
+	FlightId      uint   `json:"flight_id" gorm:"not null;foreignKey:id;references:flights;constraint:OnDelete:RESTRICT"`
+	TransactionId uint   `json:"transaction_id" gorm:"not null;foreignKey:id;references:transactions;constraint:OnDelete:RESTRICT"`
 	Status        string `json:"status" gorm:"type:status_enum;not null"`
 
 	// Passenger properties
@@ -31,5 +31,5 @@ type Passenger struct {
 	VipMember        bool      `json:"vip_member" gorm:"not null"`
 	Disabled         bool      `json:"disabled" gorm:"not null"`
 	Child            bool      `json:"child" gorm:"not null"`
-	Seat             int       `json:"seat" gorm:"default:null"`
+	Seat             uint      `json:"seat" gorm:"default:null"`
 }

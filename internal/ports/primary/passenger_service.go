@@ -9,7 +9,7 @@ type PassengerService interface {
 	GetPassengerByPNR(request entities.GetPassengerByPnrRequest) (entities.Passenger, error)
 	OnlineCheckInPassenger(request entities.OnlineCheckInRequest) error
 	GetPassengersBySpecificFlight(request entities.GetPassengersBySpecificFlightRequest) ([]entities.Passenger, error)
-	CreatePassenger(request entities.CreatePassengerRequest) error
+	CreatePassenger(request *entities.CreatePassengerRequest) (*entities.Passenger, error)
 	GetAllPassengers() ([]entities.Passenger, error)
 	EmployeeCheckInPassenger(request entities.EmployeeCheckInRequest) (entities.Passenger, error)
 	CancelPassenger(request entities.CancelPassengerRequest) error

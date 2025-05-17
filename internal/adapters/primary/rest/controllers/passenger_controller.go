@@ -20,13 +20,14 @@ func NewPassengerController(service primary.PassengerService) *PassengerControll
 func (c *PassengerController) GetPassengerByID(ctx *fiber.Ctx) error {
 	var request entities.GetPassengerByIdRequest
 	if err := ctx.QueryParser(&request); err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		log.Error().Err(err).Msg("Error binding query")
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid query params")
 	}
 
 	passenger, err := c.service.GetPassengerByID(request)
 	if err != nil {
 		log.Error().Err(err).Str("national_id", request.NationalId).Msg("Error getting passenger by ID")
-		return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"error": "Passenger not found"})
+		return fiber.NewError(fiber.StatusNotFound, "Passenger not found")
 	}
 	log.Info().Str("national_id", request.NationalId).Msg("Successfully retrieved passenger by ID")
 	return ctx.Status(http.StatusOK).JSON(passenger)
@@ -35,13 +36,14 @@ func (c *PassengerController) GetPassengerByID(ctx *fiber.Ctx) error {
 func (c *PassengerController) GetPassengerByPNR(ctx *fiber.Ctx) error {
 	var request entities.GetPassengerByPnrRequest
 	if err := ctx.QueryParser(&request); err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		log.Error().Err(err).Msg("Error binding query")
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid query params")
 	}
 
 	passenger, err := c.service.GetPassengerByPNR(request)
 	if err != nil {
 		log.Error().Err(err).Str("pnr", request.PNR).Str("surname", request.Surname).Msg("Error getting passenger by PNR")
-		return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"error": "Passenger not found"})
+		return fiber.NewError(fiber.StatusNotFound, "Passenger not found")
 	}
 	log.Info().Str("pnr", request.PNR).Str("surname", request.Surname).Msg("Successfully retrieved passenger by PNR")
 	return ctx.Status(http.StatusOK).JSON(passenger)
@@ -50,13 +52,14 @@ func (c *PassengerController) GetPassengerByPNR(ctx *fiber.Ctx) error {
 func (c *PassengerController) OnlineCheckInPassenger(ctx *fiber.Ctx) error {
 	var request entities.OnlineCheckInRequest
 	if err := ctx.BodyParser(&request); err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		log.Error().Err(err).Msg("Error binding JSON")
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid request payload")
 	}
 
 	err := c.service.OnlineCheckInPassenger(request)
 	if err != nil {
 		log.Error().Err(err).Str("pnr", request.PNR).Str("surname", request.Surname).Msg("Error checking in passenger")
-		return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"error": "Passenger not found or check-in failed"})
+		return fiber.NewError(fiber.StatusNotFound, "Passenger not found or check-in failed")
 	}
 	log.Info().Str("pnr", request.PNR).Str("surname", request.Surname).Msg("Successfully checked in passenger")
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Check-in successful"})
@@ -66,13 +69,13 @@ func (c *PassengerController) GetPassengersBySpecificFlight(ctx *fiber.Ctx) erro
 	var request entities.GetPassengersBySpecificFlightRequest
 	if err := ctx.QueryParser(&request); err != nil {
 		log.Error().Err(err).Msg("Error binding query parameters")
-		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid query parameters"})
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid query parameters")
 	}
 
 	passengers, err := c.service.GetPassengersBySpecificFlight(request)
 	if err != nil {
 		log.Error().Err(err).Str("flight_number", request.FlightNumber).Msg("Error getting passengers by specific flight")
-		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error retrieving passengers"})
+		return fiber.NewError(fiber.StatusInternalServerError, "Error retrieving passengers")
 	}
 
 	log.Info().Str("flight_number", request.FlightNumber).Msg("Successfully retrieved passengers by specific flight")
@@ -83,22 +86,23 @@ func (c *PassengerController) CreatePassenger(ctx *fiber.Ctx) error {
 	var request entities.CreatePassengerRequest
 	if err := ctx.BodyParser(&request); err != nil {
 		log.Error().Err(err).Msg("Error binding JSON")
-		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid request payload")
 	}
 
-	err := c.service.CreatePassenger(request)
+	_, err := c.service.CreatePassenger(&request)
 	if err != nil {
-		log.Error().Err(err).Str("national_id", request.Passenger.NationalId).Msg("Error creating passenger")
-		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error creating passenger"})
+		log.Error().Err(err).Msg("Error creating passenger")
+		return fiber.NewError(fiber.StatusInternalServerError, "Error creating passenger")
 	}
-	return ctx.Status(http.StatusCreated).JSON(fiber.Map{"message": "Passenger created successfully"})
+
+	return ctx.SendStatus(http.StatusCreated)
 }
 
 func (c *PassengerController) GetAllPassengers(ctx *fiber.Ctx) error {
 	passengers, err := c.service.GetAllPassengers()
 	if err != nil {
 		log.Error().Err(err).Msg("Error retrieving all passengers")
-		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error retrieving all passengers"})
+		return fiber.NewError(fiber.StatusInternalServerError, "Error retrieving all passengers")
 	}
 	return ctx.Status(http.StatusOK).JSON(passengers)
 }
@@ -106,7 +110,8 @@ func (c *PassengerController) GetAllPassengers(ctx *fiber.Ctx) error {
 func (c *PassengerController) EmployeeCheckInPassenger(ctx *fiber.Ctx) error {
 	var request entities.EmployeeCheckInRequest
 	if err := ctx.BodyParser(&request); err != nil {
-		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		log.Error().Err(err).Msg("Error binding JSON")
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid request payload")
 	}
 
 	passenger, err := c.service.EmployeeCheckInPassenger(request)
@@ -115,7 +120,7 @@ func (c *PassengerController) EmployeeCheckInPassenger(ctx *fiber.Ctx) error {
 			Str("national_id", request.NationalId).
 			Str("destination_airport", request.DestinationAirport).
 			Msg("Error checking in passenger")
-		return ctx.Status(http.StatusNotFound).JSON(fiber.Map{"error": "Passenger not found or check-in failed"})
+		return fiber.NewError(fiber.StatusNotFound, "Passenger not found or check-in failed")
 	}
 
 	log.Info().
@@ -129,13 +134,13 @@ func (c *PassengerController) CancelPassenger(ctx *fiber.Ctx) error {
 	var request entities.CancelPassengerRequest
 	if err := ctx.BodyParser(&request); err != nil {
 		log.Error().Err(err).Msg("Error parsing JSON body")
-		return ctx.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid request payload")
 	}
 
 	err := c.service.CancelPassenger(request)
 	if err != nil {
 		log.Error().Err(err).Uint("passenger_id", request.PassengerID).Msg("Error canceling passenger")
-		return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error canceling passenger"})
+		return fiber.NewError(fiber.StatusInternalServerError, "Error canceling passenger")
 	}
 
 	log.Info().Uint("passenger_id", request.PassengerID).Msg("Successfully canceled passenger")

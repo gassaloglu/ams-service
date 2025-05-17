@@ -4,16 +4,19 @@ import (
 	"ams-service/internal/core/entities"
 	"ams-service/internal/ports/primary"
 	"ams-service/internal/ports/secondary"
+	"fmt"
 
 	"github.com/rs/zerolog/log"
 )
 
 type PassengerService struct {
-	repo secondary.PassengerRepository
+	repo   secondary.PassengerRepository
+	bank   primary.BankService
+	flight primary.FlightService
 }
 
-func NewPassengerService(repo secondary.PassengerRepository) primary.PassengerService {
-	return &PassengerService{repo: repo}
+func NewPassengerService(repo secondary.PassengerRepository, bank primary.BankService, flight primary.FlightService) primary.PassengerService {
+	return &PassengerService{repo: repo, bank: bank, flight: flight}
 }
 
 func (s *PassengerService) GetPassengerByID(request entities.GetPassengerByIdRequest) (entities.Passenger, error) {
@@ -56,14 +59,40 @@ func (s *PassengerService) GetPassengersBySpecificFlight(request entities.GetPas
 	return passengers, nil
 }
 
-func (s *PassengerService) CreatePassenger(request entities.CreatePassengerRequest) error {
-	err := s.repo.CreatePassenger(request)
+func (s *PassengerService) CreatePassenger(request *entities.CreatePassengerRequest) (*entities.Passenger, error) {
+	flight, err := s.flight.FindById(&entities.GetFlightByIdRequest{
+		ID: fmt.Sprintf("%d", request.Passenger.FlightID),
+	})
+
 	if err != nil {
-		log.Error().Err(err).Str("national_id", request.Passenger.NationalId).Msg("Error creating passenger")
-		return err
+		return nil, err
 	}
-	log.Info().Str("national_id", request.Passenger.NationalId).Msg("Successfully created passenger")
-	return nil
+
+	amount, err := calculateTicketPrice(flight.Price, request.Passenger.FareType)
+
+	if err != nil {
+		return nil, err
+	}
+
+	transaction, err := s.bank.Pay(&entities.PaymentRequest{
+		Amount:     amount,
+		CreditCard: request.CreditCard,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	mappedPassenger := mapCreatePassengerRequestToPassengerEntity(request)
+	mappedPassenger.TransactionId = transaction.ID
+
+	passenger, err := s.repo.CreatePassenger(&mappedPassenger)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return passenger, nil
 }
 
 func (s *PassengerService) GetAllPassengers() ([]entities.Passenger, error) {
@@ -100,4 +129,37 @@ func (s *PassengerService) CancelPassenger(request entities.CancelPassengerReque
 	}
 	log.Info().Uint("passenger_id", request.PassengerID).Msg("Successfully canceled passenger")
 	return nil
+}
+
+var priceCoefficients = map[string]float64{
+	"Essentials": 1.0,
+	"Advantage":  1.2,
+	"Comfort":    1.2 * 1.2,
+}
+
+func calculateTicketPrice(basePrice float64, fareType string) (float64, error) {
+	coefficient, exists := priceCoefficients[fareType]
+
+	if !exists {
+		return 0, fmt.Errorf("invalid fare type: %s", fareType)
+	}
+
+	return basePrice * coefficient, nil
+}
+
+func mapCreatePassengerRequestToPassengerEntity(request *entities.CreatePassengerRequest) entities.Passenger {
+	return entities.Passenger{
+		FlightId:   request.Passenger.FlightID,
+		FareType:   request.Passenger.FareType,
+		NationalId: request.Passenger.NationalID,
+		Name:       request.Passenger.Name,
+		Surname:    request.Passenger.Surname,
+		Email:      request.Passenger.Email,
+		Phone:      request.Passenger.Phone,
+		Gender:     request.Passenger.Gender,
+		Disabled:   request.Passenger.Disabled,
+		Seat:       request.Passenger.Seat,
+		BirthDate:  request.Passenger.BirthDate,
+		Child:      request.Passenger.Child,
+	}
 }

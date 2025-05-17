@@ -56,9 +56,10 @@ func (r *PassengerRepositoryImpl) GetPassengersBySpecificFlight(request entities
 	return passengers, result.Error
 }
 
-func (r *PassengerRepositoryImpl) CreatePassenger(request entities.CreatePassengerRequest) error {
-	result := r.db.Create(request.Passenger)
-	return result.Error
+func (r *PassengerRepositoryImpl) CreatePassenger(request *entities.Passenger) (*entities.Passenger, error) {
+	clone := *request
+	result := r.db.Create(clone)
+	return &clone, result.Error
 }
 
 func (r *PassengerRepositoryImpl) GetAllPassengers() ([]entities.Passenger, error) {
