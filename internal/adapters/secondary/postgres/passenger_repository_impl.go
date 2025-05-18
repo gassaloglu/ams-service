@@ -58,7 +58,7 @@ func (r *PassengerRepositoryImpl) GetPassengersBySpecificFlight(request entities
 
 func (r *PassengerRepositoryImpl) CreatePassenger(request *entities.Passenger) (*entities.Passenger, error) {
 	clone := *request
-	result := r.db.Create(clone)
+	result := r.db.Create(&clone)
 	return &clone, result.Error
 }
 

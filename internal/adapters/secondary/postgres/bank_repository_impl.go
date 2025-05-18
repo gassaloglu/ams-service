@@ -20,6 +20,13 @@ func (r *BankRepositoryImpl) CreateCreditCard(card *entities.CreditCard) (*entit
 	return card, err
 }
 
+func (r *BankRepositoryImpl) CreateAllCreditCards(cards []entities.CreditCard) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		result := tx.Create(cards)
+		return result.Error
+	})
+}
+
 func (r *BankRepositoryImpl) FindCreditCard(info *entities.CreditCardInfo) (entities.CreditCard, error) {
 	var card entities.CreditCard
 
@@ -37,14 +44,14 @@ func (r *BankRepositoryImpl) FindCreditCard(info *entities.CreditCardInfo) (enti
 
 func (r *BankRepositoryImpl) UpdateCreditCard(card *entities.CreditCard) (*entities.CreditCard, error) {
 	clone := *card
-	err := r.db.Save(clone).Error
+	err := r.db.Save(&clone).Error
 	return &clone, err
 }
 
 func (r *BankRepositoryImpl) CreateTransaction(transaction *entities.Transaction) (*entities.Transaction, error) {
 	clone := *transaction
-	err := r.db.Create(clone).Error
-	return &clone, err
+	result := r.db.Create(&clone)
+	return &clone, result.Error
 }
 
 func (r *BankRepositoryImpl) FindTransactionById(id string) (*entities.Transaction, error) {

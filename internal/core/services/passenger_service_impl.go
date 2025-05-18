@@ -5,7 +5,9 @@ import (
 	"ams-service/internal/ports/primary"
 	"ams-service/internal/ports/secondary"
 	"fmt"
+	"strings"
 
+	"github.com/necmettindev/randomstring"
 	"github.com/rs/zerolog/log"
 )
 
@@ -60,9 +62,7 @@ func (s *PassengerService) GetPassengersBySpecificFlight(request entities.GetPas
 }
 
 func (s *PassengerService) CreatePassenger(request *entities.CreatePassengerRequest) (*entities.Passenger, error) {
-	flight, err := s.flight.FindById(&entities.GetFlightByIdRequest{
-		ID: fmt.Sprintf("%d", request.Passenger.FlightID),
-	})
+	flight, err := s.flight.FindByFlightNumber(request.Passenger.FlightNumber)
 
 	if err != nil {
 		return nil, err
@@ -83,8 +83,14 @@ func (s *PassengerService) CreatePassenger(request *entities.CreatePassengerRequ
 		return nil, err
 	}
 
-	mappedPassenger := mapCreatePassengerRequestToPassengerEntity(request)
+	mappedPassenger, err := mapCreatePassengerRequestToPassengerEntity(request)
+
+	if err != nil {
+		return nil, err
+	}
+
 	mappedPassenger.TransactionId = transaction.ID
+	mappedPassenger.FlightId = flight.ID
 
 	passenger, err := s.repo.CreatePassenger(&mappedPassenger)
 
@@ -93,6 +99,17 @@ func (s *PassengerService) CreatePassenger(request *entities.CreatePassengerRequ
 	}
 
 	return passenger, nil
+}
+
+func (p PassengerService) CreateAllPassengers(request *[]entities.CreatePassengerRequest) error {
+	for _, passengerRequest := range *request {
+		_, err := p.CreatePassenger(&passengerRequest)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *PassengerService) GetAllPassengers() ([]entities.Passenger, error) {
@@ -132,9 +149,15 @@ func (s *PassengerService) CancelPassenger(request entities.CancelPassengerReque
 }
 
 var priceCoefficients = map[string]float64{
-	"Essentials": 1.0,
-	"Advantage":  1.2,
-	"Comfort":    1.2 * 1.2,
+	"essentials": 1.0,
+	"advantage":  1.2,
+	"comfort":    1.2 * 1.2,
+}
+
+var extraBaggageMap = map[string]int{
+	"essentials": 0,
+	"advantage":  10,
+	"comfort":    30,
 }
 
 func calculateTicketPrice(basePrice float64, fareType string) (float64, error) {
@@ -147,19 +170,28 @@ func calculateTicketPrice(basePrice float64, fareType string) (float64, error) {
 	return basePrice * coefficient, nil
 }
 
-func mapCreatePassengerRequestToPassengerEntity(request *entities.CreatePassengerRequest) entities.Passenger {
-	return entities.Passenger{
-		FlightId:   request.Passenger.FlightID,
-		FareType:   request.Passenger.FareType,
-		NationalId: request.Passenger.NationalID,
-		Name:       request.Passenger.Name,
-		Surname:    request.Passenger.Surname,
-		Email:      request.Passenger.Email,
-		Phone:      request.Passenger.Phone,
-		Gender:     request.Passenger.Gender,
-		Disabled:   request.Passenger.Disabled,
-		Seat:       request.Passenger.Seat,
-		BirthDate:  request.Passenger.BirthDate,
-		Child:      request.Passenger.Child,
+func mapCreatePassengerRequestToPassengerEntity(request *entities.CreatePassengerRequest) (entities.Passenger, error) {
+	pnr, err := randomstring.GenerateString(randomstring.GenerationOptions{
+		Length: 6,
+	})
+
+	if err != nil {
+		return entities.Passenger{}, fmt.Errorf("failed to generate PNR: %w", err)
 	}
+
+	return entities.Passenger{
+		PnrNo:        strings.ToUpper(pnr),
+		FareType:     request.Passenger.FareType,
+		NationalId:   request.Passenger.NationalID,
+		Name:         request.Passenger.Name,
+		Surname:      request.Passenger.Surname,
+		Email:        request.Passenger.Email,
+		Phone:        request.Passenger.Phone,
+		Gender:       request.Passenger.Gender,
+		Disabled:     request.Passenger.Disabled,
+		Seat:         request.Passenger.Seat,
+		BirthDate:    request.Passenger.BirthDate,
+		Child:        request.Passenger.Child,
+		ExtraBaggage: extraBaggageMap[request.Passenger.FareType],
+	}, nil
 }

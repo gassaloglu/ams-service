@@ -20,6 +20,10 @@ func (s *FlightService) FindById(request *entities.GetFlightByIdRequest) (*entit
 	return s.repo.FindById(request.ID)
 }
 
+func (s *FlightService) FindByFlightNumber(flightNumber string) (*entities.Flight, error) {
+	return s.repo.FindByFlightNumber(flightNumber)
+}
+
 func (s *FlightService) FindAllActive(request *entities.GetAllFlightsRequest) ([]entities.Flight, error) {
 	return s.repo.FindAllActive(request)
 }

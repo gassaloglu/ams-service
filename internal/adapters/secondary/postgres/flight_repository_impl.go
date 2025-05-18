@@ -28,6 +28,16 @@ func (r *FlightRepositoryImpl) FindById(id string) (*entities.Flight, error) {
 	return &flight, result.Error
 }
 
+func (r *FlightRepositoryImpl) FindByFlightNumber(flightNumber string) (*entities.Flight, error) {
+	var flight entities.Flight
+
+	result := r.db.
+		Where("flight_number", flightNumber).
+		Find(&flight)
+
+	return &flight, result.Error
+}
+
 func (r *FlightRepositoryImpl) FindAll(request *entities.GetAllFlightsRequest) ([]entities.Flight, error) {
 	var flights []entities.Flight
 	result := buildFindAllFlightsQuery(r.db, request).Find(&flights)

@@ -17,6 +17,22 @@ func NewUserService(repo secondary.UserRepository, token primary.TokenService) p
 	return &UserService{repo: repo, token: token}
 }
 
+func (s *UserService) RegisterAll(requests []entities.RegisterUserRequest) error {
+	var users []entities.User
+
+	for _, request := range requests {
+		user, err := mapRegisterUserRequestToUserEntity(&request)
+
+		if err != nil {
+			return err
+		}
+
+		users = append(users, *user)
+	}
+
+	return s.repo.CreateAll(users)
+}
+
 func (s *UserService) Register(request *entities.RegisterUserRequest) (string, error) {
 	user, err := mapRegisterUserRequestToUserEntity(request)
 	if err != nil {

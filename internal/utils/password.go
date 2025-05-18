@@ -18,7 +18,7 @@ func GenerateSalt(size int) (string, error) {
 		log.Error().Err(err).Msg("Failed to generate salt")
 		return "", fmt.Errorf("failed to generate salt: %v", err)
 	}
-	log.Info().Msg("Successfully generated salt")
+
 	return base64.StdEncoding.EncodeToString(salt), nil
 }
 
@@ -33,7 +33,6 @@ func HashPassword(password, salt string) (string, error) {
 	bytes := []byte(password)
 	hash := pbkdf2.Key(bytes, saltBytes, 10000, 32, sha256.New)
 	hashedPassword := base64.StdEncoding.EncodeToString(hash)
-	log.Info().Msg("Successfully hashed password")
 	return hashedPassword, nil
 }
 

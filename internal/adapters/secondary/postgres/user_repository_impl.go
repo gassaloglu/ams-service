@@ -3,6 +3,7 @@ package postgres
 import (
 	"ams-service/internal/core/entities"
 	"ams-service/internal/ports/secondary"
+
 	"gorm.io/gorm"
 )
 
@@ -19,6 +20,13 @@ func (r *UserRepositoryImpl) CreateUser(user *entities.User) (*entities.User, er
 	clone := *user
 	result := r.db.Create(&clone)
 	return &clone, result.Error
+}
+
+func (r *UserRepositoryImpl) CreateAll(users []entities.User) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		result := tx.Create(&users)
+		return result.Error
+	})
 }
 
 func (r *UserRepositoryImpl) FindUserByEmail(email string) (*entities.User, error) {

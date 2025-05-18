@@ -5,6 +5,8 @@ import (
 	"ams-service/internal/ports/primary"
 	"ams-service/internal/ports/secondary"
 	"errors"
+
+	"github.com/sourcegraph/conc/iter"
 )
 
 type BankServiceImpl struct {
@@ -18,6 +20,11 @@ func NewBankService(repo secondary.BankRepository) primary.BankService {
 func (s *BankServiceImpl) CreateCreditCard(request *entities.CreateCreditCardRequest) (*entities.CreditCard, error) {
 	card := mapCreateCreditCardRequestToCreditCardEntity(request)
 	return s.repo.CreateCreditCard(&card)
+}
+
+func (s *BankServiceImpl) CreateAllCreditCards(requests []entities.CreateCreditCardRequest) error {
+	cards := iter.Map(requests, mapCreateCreditCardRequestToCreditCardEntity)
+	return s.repo.CreateAllCreditCards(cards)
 }
 
 func (s *BankServiceImpl) Pay(request *entities.PaymentRequest) (*entities.Transaction, error) {
@@ -76,6 +83,6 @@ func mapCreateCreditCardRequestToCreditCardEntity(request *entities.CreateCredit
 		ExpirationMonth:   request.ExpirationMonth,
 		ExpirationYear:    request.ExpirationYear,
 		CVV:               request.CVV,
-		Balance:           0,
+		Balance:           100_000.0,
 	}
 }

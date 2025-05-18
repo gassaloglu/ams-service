@@ -3,6 +3,7 @@ package controllers
 import (
 	"ams-service/internal/core/entities"
 	"ams-service/internal/ports/primary"
+	"ams-service/internal/utils"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -83,19 +84,35 @@ func (c *PassengerController) GetPassengersBySpecificFlight(ctx *fiber.Ctx) erro
 }
 
 func (c *PassengerController) CreatePassenger(ctx *fiber.Ctx) error {
-	var request entities.CreatePassengerRequest
-	if err := ctx.BodyParser(&request); err != nil {
-		log.Error().Err(err).Msg("Error binding JSON")
-		return fiber.NewError(fiber.StatusBadRequest, "Invalid request payload")
-	}
+	if utils.IsBatchRequest(ctx) {
+		var requests []entities.CreatePassengerRequest
+		if err := ctx.BodyParser(&requests); err != nil {
+			log.Error().Err(err).Msg("Error binding JSON")
+			return fiber.NewError(fiber.StatusBadRequest, "Invalid request payload")
+		}
 
-	_, err := c.service.CreatePassenger(&request)
-	if err != nil {
-		log.Error().Err(err).Msg("Error creating passenger")
-		return fiber.NewError(fiber.StatusInternalServerError, "Error creating passenger")
-	}
+		err := c.service.CreateAllPassengers(&requests)
+		if err != nil {
+			log.Error().Err(err).Msg("Error creating passengers")
+			return fiber.NewError(fiber.StatusInternalServerError, "Error creating passenger")
+		}
 
-	return ctx.SendStatus(http.StatusCreated)
+		return ctx.SendStatus(http.StatusCreated)
+	} else {
+		var request entities.CreatePassengerRequest
+		if err := ctx.BodyParser(&request); err != nil {
+			log.Error().Err(err).Msg("Error binding JSON")
+			return fiber.NewError(fiber.StatusBadRequest, "Invalid request payload")
+		}
+
+		_, err := c.service.CreatePassenger(&request)
+		if err != nil {
+			log.Error().Err(err).Msg("Error creating passenger")
+			return fiber.NewError(fiber.StatusInternalServerError, "Error creating passenger")
+		}
+
+		return ctx.SendStatus(http.StatusCreated)
+	}
 }
 
 func (c *PassengerController) GetAllPassengers(ctx *fiber.Ctx) error {
