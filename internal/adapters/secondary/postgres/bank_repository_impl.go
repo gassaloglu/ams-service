@@ -37,7 +37,7 @@ func (r *BankRepositoryImpl) FindCreditCard(info *entities.CreditCardInfo) (enti
 		Where("expiration_month", info.ExpirationMonth).
 		Where("expiration_year", info.ExpirationYear).
 		Where("cvv", info.CVV).
-		Find(&card)
+		First(&card)
 
 	return card, result.Error
 }

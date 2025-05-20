@@ -31,7 +31,7 @@ func (r *EmployeeRepositoryImpl) FindAll() ([]entities.Employee, error) {
 
 func (r *EmployeeRepositoryImpl) FindByNationalId(nationalId string) (*entities.Employee, error) {
 	var employee entities.Employee
-	result := r.db.Find(&employee, &entities.Employee{NationalID: nationalId})
+	result := r.db.First(&employee, &entities.Employee{NationalID: nationalId})
 	return &employee, result.Error
 }
 

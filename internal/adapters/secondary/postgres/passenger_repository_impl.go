@@ -19,7 +19,7 @@ func NewPassengerRepositoryImpl(db *gorm.DB) secondary.PassengerRepository {
 
 func (r *PassengerRepositoryImpl) GetPassengerByID(request entities.GetPassengerByIdRequest) (entities.Passenger, error) {
 	var passenger entities.Passenger
-	result := r.db.Where("national_id", request.NationalId).Find(&passenger)
+	result := r.db.Where("national_id", request.NationalId).First(&passenger)
 	return passenger, result.Error
 }
 
@@ -28,7 +28,7 @@ func (r *PassengerRepositoryImpl) GetPassengerByPNR(request entities.GetPassenge
 	result := r.db.
 		Where("pnr", request.PNR).
 		Where("surname", request.Surname).
-		Find(&passenger)
+		First(&passenger)
 	return passenger, result.Error
 }
 
