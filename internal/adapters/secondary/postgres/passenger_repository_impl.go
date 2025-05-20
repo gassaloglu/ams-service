@@ -69,7 +69,6 @@ func (r *PassengerRepositoryImpl) GetAllPassengers() ([]entities.Passenger, erro
 }
 
 func (r *PassengerRepositoryImpl) EmployeeCheckInPassenger(request entities.EmployeeCheckInRequest) (entities.Passenger, error) {
-	// TODO
 	return entities.Passenger{}, errors.ErrUnsupported
 }
 
@@ -83,4 +82,30 @@ func (r *PassengerRepositoryImpl) CancelPassenger(request entities.CancelPasseng
 	}
 
 	return result.Error
+}
+
+func (r *PassengerRepositoryImpl) FindPassengersMatchingAnyUniquePassengerInfo(p *entities.PassengerInfo) (*entities.Passenger, error) {
+	var passenger entities.Passenger
+
+	result := r.db.
+		Joins("JOIN flights ON flights.id = passengers.flight_id").
+		Where("flights.flight_number = ?", p.FlightNumber).
+		Where(
+			r.db.
+				Where("national_id = ?", p.NationalID).
+				Or("email = ?", p.Email).
+				Or("phone = ?", p.Phone).
+				Or("seat = ?", p.Seat),
+		).
+		First(&passenger)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, errors.New("no passenger found with the given ID")
+	}
+
+	return &passenger, nil
 }

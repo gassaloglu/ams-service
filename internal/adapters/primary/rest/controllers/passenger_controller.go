@@ -88,13 +88,13 @@ func (c *PassengerController) CreatePassenger(ctx *fiber.Ctx) error {
 		var requests []entities.CreatePassengerRequest
 		if err := ctx.BodyParser(&requests); err != nil {
 			log.Error().Err(err).Msg("Error binding JSON")
-			return fiber.NewError(fiber.StatusBadRequest, "Invalid request payload")
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
 
 		err := c.service.CreateAllPassengers(&requests)
 		if err != nil {
 			log.Error().Err(err).Msg("Error creating passengers")
-			return fiber.NewError(fiber.StatusInternalServerError, "Error creating passenger")
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
 
 		return ctx.SendStatus(http.StatusCreated)
@@ -102,16 +102,16 @@ func (c *PassengerController) CreatePassenger(ctx *fiber.Ctx) error {
 		var request entities.CreatePassengerRequest
 		if err := ctx.BodyParser(&request); err != nil {
 			log.Error().Err(err).Msg("Error binding JSON")
-			return fiber.NewError(fiber.StatusBadRequest, "Invalid request payload")
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
 
-		_, err := c.service.CreatePassenger(&request)
+		passenger, err := c.service.CreatePassenger(&request)
 		if err != nil {
 			log.Error().Err(err).Msg("Error creating passenger")
-			return fiber.NewError(fiber.StatusInternalServerError, "Error creating passenger")
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
 
-		return ctx.SendStatus(http.StatusCreated)
+		return ctx.Status(http.StatusCreated).JSON(passenger)
 	}
 }
 

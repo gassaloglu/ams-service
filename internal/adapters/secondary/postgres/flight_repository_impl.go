@@ -35,7 +35,15 @@ func (r *FlightRepositoryImpl) FindByFlightNumber(flightNumber string) (*entitie
 		Where("flight_number", flightNumber).
 		Find(&flight)
 
-	return &flight, result.Error
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+
+	return &flight, nil
 }
 
 func (r *FlightRepositoryImpl) FindAll(request *entities.GetAllFlightsRequest) ([]entities.Flight, error) {

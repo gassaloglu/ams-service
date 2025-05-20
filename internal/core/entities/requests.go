@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"strings"
 	"time"
 )
 
@@ -12,6 +13,22 @@ type Comparable[T comparable] struct {
 	GreaterThanOrEqualTo *T `query:"gte"`
 	LessThanOrEqualTo    *T `query:"lte"`
 	NotEqaualTo          *T `query:"neq"`
+}
+
+type Date struct {
+	time.Time
+}
+
+const expiryDateLayout = "2006-01-02"
+
+func (d *Date) UnmarshalJSON(b []byte) (err error) {
+	s := strings.Trim(string(b), "\"")
+	if s == "null" {
+		d.Time = time.Time{}
+		return
+	}
+	d.Time, err = time.Parse(expiryDateLayout, s)
+	return
 }
 
 /* Passenger */
@@ -40,18 +57,18 @@ type GetPassengersBySpecificFlightRequest struct {
 }
 
 type PassengerInfo struct {
-	FlightNumber string    `json:"flight_number" binding:"required,len=10,alphanum"`
-	FareType     string    `json:"fare_type" binding:"required,max=50"`
-	NationalID   string    `json:"national_id" binding:"required,len=11,numeric"`
-	Name         string    `json:"name" binding:"required,alpha,min=2,max=50"`
-	Surname      string    `json:"surname" binding:"required,alpha,min=2,max=50"`
-	Email        string    `json:"email" binding:"required,email,max=100"`
-	Phone        string    `json:"phone" binding:"required,e164,max=15"`
-	Gender       string    `json:"gender" binding:"required,oneof=male female"`
-	Disabled     bool      `json:"disabled" binding:"required,oneof=0 1"`
-	Seat         uint      `json:"seat" binding:"required,numeric"`
-	BirthDate    time.Time `json:"birth_date" binding:"required,datetime=2006-01-02"`
-	Child        bool      `json:"child" binding:"required,oneof=0 1"`
+	FlightNumber string `json:"flight_number" binding:"required,len=10,alphanum"`
+	FareType     string `json:"fare_type" binding:"required,max=50"`
+	NationalID   string `json:"national_id" binding:"required,len=11,numeric"`
+	Name         string `json:"name" binding:"required,alpha,min=2,max=50"`
+	Surname      string `json:"surname" binding:"required,alpha,min=2,max=50"`
+	Email        string `json:"email" binding:"required,email,max=100"`
+	Phone        string `json:"phone" binding:"required,e164,max=15"`
+	Gender       string `json:"gender" binding:"required,oneof=male female"`
+	Disabled     bool   `json:"disabled" binding:"required,oneof=0 1"`
+	Seat         uint   `json:"seat" binding:"required,numeric"`
+	BirthDate    Date   `json:"birth_date" binding:"required"`
+	Child        bool   `json:"child" binding:"required,oneof=0 1"`
 }
 
 type CreatePassengerRequest struct {

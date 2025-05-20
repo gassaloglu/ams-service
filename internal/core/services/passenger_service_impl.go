@@ -9,6 +9,7 @@ import (
 
 	"github.com/necmettindev/randomstring"
 	"github.com/rs/zerolog/log"
+	"gorm.io/gorm"
 )
 
 type PassengerService struct {
@@ -62,6 +63,16 @@ func (s *PassengerService) GetPassengersBySpecificFlight(request entities.GetPas
 }
 
 func (s *PassengerService) CreatePassenger(request *entities.CreatePassengerRequest) (*entities.Passenger, error) {
+	existingPassenger, err := s.repo.FindPassengersMatchingAnyUniquePassengerInfo(&request.Passenger)
+
+	if err != gorm.ErrRecordNotFound && err != nil {
+		return nil, err
+	}
+
+	if existingPassenger != nil {
+		return nil, fmt.Errorf("passenger with the same information already exists")
+	}
+
 	flight, err := s.flight.FindByFlightNumber(request.Passenger.FlightNumber)
 
 	if err != nil {
@@ -190,7 +201,7 @@ func mapCreatePassengerRequestToPassengerEntity(request *entities.CreatePassenge
 		Gender:       request.Passenger.Gender,
 		Disabled:     request.Passenger.Disabled,
 		Seat:         request.Passenger.Seat,
-		BirthDate:    request.Passenger.BirthDate,
+		BirthDate:    request.Passenger.BirthDate.Time,
 		Child:        request.Passenger.Child,
 		ExtraBaggage: extraBaggageMap[request.Passenger.FareType],
 	}, nil
