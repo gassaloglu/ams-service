@@ -54,7 +54,7 @@ func (r *BankRepositoryImpl) CreateTransaction(transaction *entities.Transaction
 	return &clone, result.Error
 }
 
-func (r *BankRepositoryImpl) FindTransactionById(id string) (*entities.Transaction, error) {
+func (r *BankRepositoryImpl) FindTransactionById(id uint) (*entities.Transaction, error) {
 	var transaction entities.Transaction
 	err := r.db.First(&transaction, "id = ?", id).Error
 	return &transaction, err

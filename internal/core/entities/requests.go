@@ -42,7 +42,7 @@ type GetPassengerByPnrRequest struct {
 }
 
 type OnlineCheckInRequest struct {
-	PNR     string `json:"pnr" binding:"len=6,alphanum"`
+	PNR     string `json:"pnr_no" binding:"len=6,alphanum"`
 	Surname string `json:"surname" binding:"alpha,min=2,max=50"`
 }
 
@@ -181,5 +181,5 @@ type PaymentRequest struct {
 }
 
 type RefundRequest struct {
-	TransactionID string `json:"transaction_id" binding:"required"`
+	TransactionID uint `json:"transaction_id" binding:"required"`
 }

@@ -10,5 +10,5 @@ type BankRepository interface {
 	FindCreditCard(info *entities.CreditCardInfo) (entities.CreditCard, error)
 	UpdateCreditCard(card *entities.CreditCard) (*entities.CreditCard, error)
 	CreateTransaction(transaction *entities.Transaction) (*entities.Transaction, error)
-	FindTransactionById(id string) (*entities.Transaction, error)
+	FindTransactionById(id uint) (*entities.Transaction, error)
 }
