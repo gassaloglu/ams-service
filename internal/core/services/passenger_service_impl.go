@@ -150,13 +150,13 @@ func (s *PassengerService) EmployeeCheckInPassenger(request entities.EmployeeChe
 }
 
 func (s *PassengerService) CancelPassenger(request entities.CancelPassengerRequest) error {
-	passenger, err := s.repo.FindById(request.PassengerID)
+	// // passenger, err := s.repo.FindById(request.PassengerID)
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	err = s.repo.CancelPassenger(request)
+	err := s.repo.CancelPassenger(request)
 
 	if err != nil {
 		return err
