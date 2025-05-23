@@ -68,12 +68,11 @@ func (c *EmployeeController) LoginEmployee(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	token, err := c.service.Login(&request)
+	response, err := c.service.Login(&request)
 	if err != nil {
 		log.Error().Err(err).Msg("Error logging employee in")
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	response := entities.LoginEmployeeResponse{Token: token}
 	return ctx.Status(http.StatusCreated).JSON(response)
 }

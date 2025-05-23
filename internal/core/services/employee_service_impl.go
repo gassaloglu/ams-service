@@ -57,23 +57,30 @@ func (s *EmployeeServiceImpl) Register(request *entities.RegisterEmployeeRequest
 
 }
 
-func (s *EmployeeServiceImpl) Login(request *entities.LoginEmployeeRequest) (string, error) {
+func (s *EmployeeServiceImpl) Login(request *entities.LoginEmployeeRequest) (*entities.LoginEmployeeResponse, error) {
 	employee, err := s.repo.FindByNationalId(request.NationalID)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	isValid, err := utils.VerifyPassword(request.Password, employee.PasswordHash, employee.Salt)
 	if err != nil || !isValid {
-		return "", errors.New("could not verify password")
+		return nil, errors.New("could not verify password")
 	}
 
 	token, err := s.token.CreateEmployeeToken(employee)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return token, nil
+	response := &entities.LoginEmployeeResponse{
+		Token:      token,
+		Permission: employee.Role,
+		Name:       employee.Name,
+		Surname:    employee.Surname,
+	}
+
+	return response, nil
 }
 
 func mapRegisterEmployeeRequestToEmployeeEntity(request *entities.RegisterEmployeeRequest) (*entities.Employee, error) {
