@@ -4,6 +4,7 @@ import (
 	"ams-service/internal/core/entities"
 	"ams-service/internal/ports/secondary"
 	"errors"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -26,16 +27,16 @@ func (r *PassengerRepositoryImpl) GetPassengerByID(request entities.GetPassenger
 func (r *PassengerRepositoryImpl) GetPassengerByPNR(request entities.GetPassengerByPnrRequest) (entities.Passenger, error) {
 	var passenger entities.Passenger
 	result := r.db.
-		Where("pnr", request.PNR).
-		Where("surname", request.Surname).
+		Where("LOWER(pnr_no) = ?", strings.ToLower(request.PNR)).
+		Where("LOWER(surname) = ?", strings.ToLower(request.Surname)).
 		First(&passenger)
 	return passenger, result.Error
 }
 
 func (r *PassengerRepositoryImpl) OnlineCheckInPassenger(request entities.OnlineCheckInRequest) error {
 	result := r.db.Model(&entities.Passenger{}).
-		Where("pnr", request.PNR).
-		Where("surname", request.Surname).
+		Where("LOWER(pnr_no) = ?", strings.ToLower(request.PNR)).
+		Where("LOWER(surname) = ?", strings.ToLower(request.Surname)).
 		Update("check_in", true)
 
 	return result.Error

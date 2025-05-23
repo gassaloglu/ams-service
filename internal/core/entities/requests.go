@@ -37,7 +37,7 @@ type GetPassengerByIdRequest struct {
 }
 
 type GetPassengerByPnrRequest struct {
-	PNR     string `query:"pnr" binding:"required,len=6,alphanum"`
+	PNR     string `query:"pnr_no" binding:"required,len=6,alphanum"`
 	Surname string `query:"surname" binding:"required,alpha,min=2,max=50"`
 }
 

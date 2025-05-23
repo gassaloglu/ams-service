@@ -9,5 +9,6 @@ import (
 func RegisterUserRoutes(app *fiber.App, userController *controllers.UserController) {
 	userRoute := app.Group("/users")
 	userRoute.Post("/", userController.RegisterUser)
+	userRoute.Get("/", userController.GetAllUsers)
 	userRoute.Post("/sessions", userController.LoginUser)
 }

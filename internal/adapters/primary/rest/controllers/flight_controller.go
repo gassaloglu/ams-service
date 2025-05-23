@@ -54,11 +54,6 @@ func (c *FlightController) GetAllFlights(ctx *fiber.Ctx) error {
 		return fiber.NewError(http.StatusInternalServerError, "Error getting all flights")
 	}
 
-	if len(flights) == 0 {
-		log.Info().Msg("No flights found")
-		return fiber.NewError(fiber.StatusNotFound, "No flights available")
-	}
-
 	return ctx.Status(http.StatusOK).JSON(flights)
 }
 
@@ -73,11 +68,6 @@ func (c *FlightController) GetAllActiveFlights(ctx *fiber.Ctx) error {
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting all flights")
 		return fiber.NewError(http.StatusInternalServerError, "Error getting all flights")
-	}
-
-	if len(flights) == 0 {
-		log.Info().Msg("No flights found")
-		return fiber.NewError(fiber.StatusNotFound, "No flights available")
 	}
 
 	return ctx.Status(http.StatusOK).JSON(flights)

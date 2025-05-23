@@ -70,3 +70,13 @@ func (c *UserController) LoginUser(ctx *fiber.Ctx) error {
 	response := &entities.LoginUserResponse{Token: token}
 	return ctx.Status(fiber.StatusOK).JSON(response)
 }
+
+func (c *UserController) GetAllUsers(ctx *fiber.Ctx) error {
+	users, err := c.service.GetAllUsers()
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting users")
+		return fiber.NewError(fiber.StatusInternalServerError, "Error getting users")
+	}
+
+	return ctx.Status(fiber.StatusCreated).JSON(users)
+}

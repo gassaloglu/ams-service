@@ -29,6 +29,12 @@ func (r *UserRepositoryImpl) CreateAll(users []entities.User) error {
 	})
 }
 
+func (r *UserRepositoryImpl) GetAllUsers() ([]entities.User, error) {
+	var users []entities.User
+	result := r.db.Find(&users)
+	return users, result.Error
+}
+
 func (r *UserRepositoryImpl) FindUserByEmail(email string) (*entities.User, error) {
 	var user entities.User
 	result := r.db.Where("email = ?", email).First(&user)

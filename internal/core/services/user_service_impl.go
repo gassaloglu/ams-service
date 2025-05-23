@@ -71,6 +71,10 @@ func (s *UserService) Login(email, password string) (string, error) {
 	return token, nil
 }
 
+func (s *UserService) GetAllUsers() ([]entities.User, error) {
+	return s.repo.GetAllUsers()
+}
+
 func mapRegisterUserRequestToUserEntity(request *entities.RegisterUserRequest) (*entities.User, error) {
 	salt, err := utils.GenerateSalt(16)
 	if err != nil {
