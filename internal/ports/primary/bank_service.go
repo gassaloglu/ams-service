@@ -7,4 +7,6 @@ type BankService interface {
 	CreateAllCreditCards(request []entities.CreateCreditCardRequest) error
 	Pay(request *entities.PaymentRequest) (*entities.Transaction, error)
 	Refund(request *entities.RefundRequest) (*entities.Transaction, error)
+	GetAllTransactions(request *entities.GetAllTransactionsRequest) ([]entities.Transaction, error)
+	GetAllFraudulentActivities() ([]entities.FraudulentActivity, error)
 }

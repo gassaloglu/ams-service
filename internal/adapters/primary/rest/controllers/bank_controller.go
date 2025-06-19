@@ -51,3 +51,25 @@ func (c *BankController) CreateCreditCard(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(http.StatusOK)
 	}
 }
+
+func (c *BankController) GetAllTransactions(ctx *fiber.Ctx) error {
+	var request entities.GetAllTransactionsRequest
+	if err := ctx.QueryParser(&request); err != nil {
+		log.Error().Err(err).Msg("Error parsing query params")
+		return fiber.NewError(http.StatusBadRequest, "Invalid query params")
+	}
+	transactions, err := c.service.GetAllTransactions(&request)
+	if err != nil {
+		log.Error().Err(err).Msg("Error retrieving transactions")
+		return fiber.NewError(http.StatusInternalServerError, "Server error")
+	}
+	return ctx.JSON(transactions)
+}
+
+func (c *BankController) GetAllFraudulentActivities(ctx *fiber.Ctx) error {
+	activities, err := c.service.GetAllFraudulentActivities()
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	return ctx.JSON(activities)
+}

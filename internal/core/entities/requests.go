@@ -183,3 +183,11 @@ type PaymentRequest struct {
 type RefundRequest struct {
 	TransactionID uint `json:"transaction_id" binding:"required"`
 }
+
+type GetAllTransactionsRequest struct {
+	ID               []uint               `query:"id"`
+	CreditCardID     []uint               `query:"credit_card_id"`
+	Type             []string             `query:"type"`
+	Amount           *Comparable[float64] `query:"amount"`
+	PotentiallyFraud *bool                `query:"potentially_fraud"`
+}

@@ -46,10 +46,17 @@ func (s *BankServiceImpl) Pay(request *entities.PaymentRequest) (*entities.Trans
 
 	_, err = s.repo.UpdateCreditCard(&card)
 
+	if err != nil {
+		return nil, err
+	}
+
+	potentiallyFraud := s.assessFraudPotential(request, &card)
+
 	transaction, err := s.repo.CreateTransaction(&entities.Transaction{
-		CreditCardID: card.ID,
-		Amount:       request.Amount,
-		Type:         "credit",
+		CreditCardID:     card.ID,
+		Amount:           request.Amount,
+		Type:             "credit",
+		PotentiallyFraud: potentiallyFraud,
 	})
 
 	return transaction, err
@@ -85,4 +92,19 @@ func mapCreateCreditCardRequestToCreditCardEntity(request *entities.CreateCredit
 		CVV:               request.CVV,
 		Balance:           100_000.0,
 	}
+}
+
+// GetAllTransactions implements primary.BankService.
+func (s *BankServiceImpl) GetAllTransactions(request *entities.GetAllTransactionsRequest) ([]entities.Transaction, error) {
+	return s.repo.GetAllTransactions(request)
+}
+
+// assessFraudPotential determines if a transaction is potentially fraudulent.
+func (s *BankServiceImpl) assessFraudPotential(request *entities.PaymentRequest, card *entities.CreditCard) bool {
+	// TODO: Implement fraud assessment logic
+	return false
+}
+
+func (s *BankServiceImpl) GetAllFraudulentActivities() ([]entities.FraudulentActivity, error) {
+	return s.repo.GetAllFraudulentActivities()
 }

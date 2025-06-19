@@ -8,4 +8,6 @@ import (
 
 func RegisterBankRoutes(app *fiber.App, bankController *controllers.BankController) {
 	app.Post("/creditcards", bankController.CreateCreditCard)
+	app.Get("/transactions", bankController.GetAllTransactions)
+	app.Get("/fraudulentActivities", bankController.GetAllFraudulentActivities)
 }
